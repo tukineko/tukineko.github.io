@@ -6,41 +6,24 @@ var TitleScene = cc.Scene.extend({
 		bg_title.setPosition(size.width / 2, size.height / 2);
 		this.addChild(bg_title, 0);
 		
-		/*var menuBtn = new cc.MenuItemImage(res.img_btn01, res.img_btn01, function() {
-			console.log('Pressed!');
-		});
-		menuBtn.setPosition(200, 100);
-		var menu = new cc.Menu(menuBtn);
-		menu.setPosition(0, 0);
-		this.addChild(menu, 2);*/
-		
-		/*var menu01 = cc.MenuItemFont.create("スタート１", this.onGameStart1(), this);
-		var menu02 = cc.MenuItemFont.create("スタート２", this.onGameStart1(), this);
-		menu01.setColor(cc.color(0,0,0,255));
-		menu02.setColor(cc.color(0,0,0,255));
-		menu01.setFontSize( 100 );
-		menu02.setFontSize( 100 );
-		var menu = cc.Menu.create(menu01, menu02);
-		menu.alignItemsVertically();
-		menu.setPosition(size.width / 2, size.height / 2);
-		this.addChild(menu, 1);*/
-		
-		
-		
-		this._label = cc.LabelTTF.create("touch me！", null, 50);
-		this._label.setPosition(size.width / 2, size.height / 2);
-		this._label.setColor(cc.color(0,0,0,255));
-		this._label.runAction(cc.repeatForever(cc.blink(1, 2)));
-		this.addChild(this._label, 1);
-		
-		var listener = cc.EventListener.create( {
-			event: cc.EventListener.TOUCH_ONE_BY_ONE,
-			swallowTouches: true,
-			onTouchBegan: function(touch, event) {
-				cc.director.runScene(new GameScene());
+		var button = ccui.Button.create();
+		button.setTouchEnabled(true);
+		button.loadTextures(res.img_btnStart, res.img_btnStart, null);
+		button.setPosition(size.width / 2, size.height / 2);
+		button.addTouchEventListener(function(sender, type){ // タッチイベントを設定
+			switch (type) {
+			case ccui.Widget.TOUCH_BEGAN: // ボタンにタッチした時
+				cc.director.runScene(cc.TransitionFade.create(1, new GameScene()));
+				break;
+			case ccui.Widget.TOUCH_MOVED: // ボタンにタッチ中
+				break;
+			case ccui.Widget.TOUCH_ENDED: // ボタンを離した時
+				break;
+			case ccui.Widget.TOUCH_CANCELED: // キャンセルした時
+				break;
 			}
-		});
-		cc.eventManager.addListener(listener,this);
+		}, this);
+		this.addChild(button, 1);
 		
 		
 		
@@ -55,8 +38,8 @@ var TitleScene = cc.Scene.extend({
 		var delay1 = cc.delayTime(0.5); // 0.5秒間停止
 
 		var func1 = cc.callFunc(function(){ // 関数を実行
-			item01.setOpacity(0); // 透明にする
-		}, item01);
+			title.setOpacity(0); // 透明にする
+		}, title);
 
 		var delay2 = cc.delayTime(0.5); // 0.5秒間停止
 
@@ -67,17 +50,14 @@ var TitleScene = cc.Scene.extend({
 		var spawn2 = cc.spawn(bezier1, fade1, scale2); // 移動、透明度の変更、縮小を同時に行う
 
 		var seq1 = cc.sequence(spawn1, delay1, func1, delay2, spawn2); // 作成したアクションを連続で行うシーケンスを作成
-		var repeat1 = cc.repeat(seq1, 2); // シーケンスを2回繰り返す
+		var repeat1 = cc.repeatForever(seq1, 2);
 		
-		var item01 = cc.Sprite.create(res.img_item01);
-		item01.setPosition(size.width / 2, size.height / 2);
-		item01.runAction(repeat1);
-		this.addChild(item01, 0);
+		var title = cc.Sprite.create(res.img_title);
+		title.setPosition(size.width / 2, size.height - 300);
+		title.runAction(repeat1);
+		this.addChild(title, 2);
 		
 		
-	},
-	onGameStart1:function () {
-		cc.director.runScene(new GameScene());
 	}
 });
 
