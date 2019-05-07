@@ -6,7 +6,12 @@ window.onload = function(){
 		
 		var preload_res = [
 			res.img_bgtitle,
-			res.img_enemy
+			res.img_enemy,
+			res.img_item01,
+			res.img_chara01,
+			res.img_enemy01,
+			res.img_coin01,
+			res.img_btn01,
 		]
 
 		//load resources
