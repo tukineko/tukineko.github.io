@@ -18,11 +18,11 @@ var TitleLayer = cc.Layer.extend({
 		
 		//タイトル
 		var title = cc.Sprite.create(res.img_title);
-		title.setPosition(size.width / 2, size.height + 75);
+		title.setPosition(size.width / 2, size.height - 300);
 		title.runAction(
 			cc.sequence(
-				cc.moveBy(0.5, 0, -375).easing(cc.easeOut(3)),
-				cc.delayTime(1),
+				//cc.moveBy(0.5, 0, -375).easing(cc.easeOut(3)),
+				//cc.delayTime(1),
 				cc.callFunc(function(){
 					var seq = cc.sequence(
 						cc.spawn(
@@ -44,7 +44,7 @@ var TitleLayer = cc.Layer.extend({
 		//スタートボタン
 		var button = ccui.Button.create();
 		button.setTouchEnabled(false);
-		button.loadTextures(res.img_btnStart, res.img_btnStart, null);
+		button.loadTextures(res.img_btnStart, res.img_btnStartOn, null);
 		button.setPosition(size.width / 2, size.height / 2);
 		button.addTouchEventListener(function(sender, type){ // タッチイベントを設定
 			switch (type) {
@@ -53,7 +53,7 @@ var TitleLayer = cc.Layer.extend({
 			case ccui.Widget.TOUCH_MOVED: // ボタンにタッチ中
 				break;
 			case ccui.Widget.TOUCH_ENDED: // ボタンを離した時
-				cc.director.runScene(cc.TransitionFade.create(2, new GameScene()));
+				cc.director.runScene(cc.TransitionFade.create(1, new GameScene()));
 				break;
 			case ccui.Widget.TOUCH_CANCELED: // キャンセルした時
 				break;
@@ -62,8 +62,8 @@ var TitleLayer = cc.Layer.extend({
 		button.setOpacity(0);
 		button.runAction(
 			cc.sequence(
-				cc.delayTime(1.5),
-				cc.fadeIn(1.0),
+				cc.delayTime(1),
+				cc.fadeIn(0.3).easing(cc.easeOut(5)),
 				cc.callFunc(function(){
 					button.setTouchEnabled(true);
 				})
@@ -85,7 +85,7 @@ var GameLayer = cc.Layer.extend({
 	ctor:function () {
 		this._super();
 		//初期化
-		this._game_state = GameLayer.GameState["PLAYING"];
+		this._game_state = GameLayer.GameState["READY"];
 		this._enemies = [];
 		this._coins = [];
 		//画面サイズ
@@ -121,12 +121,11 @@ var GameLayer = cc.Layer.extend({
 		cc.eventManager.addListener({
 			event: cc.EventListener.TOUCH_ONE_BY_ONE,
 			onTouchBegan: function(touch, event) {
-				if (this._game_state == GameLayer.GameState["DAMAGE"]) {
-					cc.director.runScene(new TitleScene());
-					return true;
+				if (this._game_state === GameLayer.GameState["PLAYING"]) {
+					this.changeDirection();
 				}
 				
-				this.changeDirection();
+				
 				return true;
 			}.bind(this)
 		}, this);
@@ -134,103 +133,164 @@ var GameLayer = cc.Layer.extend({
 	},
 	
 	update:function () {
-		if (this._game_state === GameLayer.GameState["DAMAGE"]) {
-			return false;
-		}
-		
 		var size = cc.director.getWinSize();
 		
-		//自キャラ移動処理
-		var playerX = this._player.getPositionX();
-		var newX = playerX + this._dx;
-		this._player.setPositionX(newX);
-		if (newX > (size.width-50) || newX < (0+50)) {
-			this.changeDirection();
-		}
-		
-		// 衝突判定
-		var playerRect = this._player.getBoundingBox();
-		// 敵と衝突しているか
-		for(var i = 0; i < this._enemies.length; i++){
-			if (cc.rectIntersectsRect(playerRect, this._enemies[i].getBoundingBox())) {
-				// ゲームオーバー
-				this.gameOver();
+		if (this._game_state === GameLayer.GameState["PLAYING"]) {
+			//自キャラ移動処理
+			var playerX = this._player.getPositionX();
+			var newX = playerX + this._dx;
+			this._player.setPositionX(newX);
+			if (newX > (size.width-50) || newX < (0+50)) {
+				this.changeDirection();
 			}
-		}
-		
-		// コインと衝突しているか
-		var i = this._coins.length;
-		while(i--){
-			if (cc.rectIntersectsRect(playerRect, this._coins[i].getBoundingBox())) {
-				this._coins[i].removeFromParent();
-				this._coins.splice(i,1);
-				this._score++;
-				this._label_score.string = this._score+"";
+
+			// 衝突判定
+			var playerRect = this._player.getBoundingBox();
+			// 敵と衝突しているか
+			for(var i = 0; i < this._enemies.length; i++){
+				if (cc.rectIntersectsRect(playerRect, this._enemies[i].getBoundingBox())) {
+					// ゲームオーバー
+					this.onGameOver();
+				}
+			}
+
+			// コインと衝突しているか
+			var i = this._coins.length;
+			while(i--){
+				if (cc.rectIntersectsRect(playerRect, this._coins[i].getBoundingBox())) {
+					this._coins[i].removeFromParent();
+					this._coins.splice(i,1);
+					this._score++;
+					this._label_score.string = this._score+"";
+				}
 			}
 		}
 	},
+	//トランジション終わり時
+	onEnterTransitionDidFinish: function() {
+		this._super();
+		this.onGameStart();
+	},
+	
 	//自キャラ方向転換処理
 	changeDirection: function(){
-		if (this._game_state === "gameover") {
-			return false;
-		}
-		this._dx = -this._dx;
-		if (this._dx > 0) {
-			this._player.setFlippedX(true);
-		}else{
-			this._player.setFlippedX(false);
+		if (this._game_state === GameLayer.GameState["PLAYING"]) {
+			this._dx = -this._dx;
+			if (this._dx > 0) {
+				this._player.setFlippedX(true);
+			}else{
+				this._player.setFlippedX(false);
+			}
 		}
 	},
 	//敵出現処理
 	spawnEnemy: function(){
-		if (this._game_state === GameLayer.GameState["DAMAGE"]) {
-			return false;
+		if (this._game_state === GameLayer.GameState["PLAYING"]) {
+			var size = cc.director.getWinSize();
+			var enemy = cc.Sprite.create(res.img_enemy01);
+			var x = Math.floor( Math.random() * (size.width - 50) );
+			var y = size.height;
+			enemy.setPosition(x , y);
+			this.addChild(enemy, 0);
+			//配列に保存
+			this._enemies.push(enemy); 
+			var randDuration = Math.random() * 2;
+			var baseDuration = 2;
+			var duration = baseDuration + randDuration; // 2～4の間の数字を生成
+			var move = new cc.MoveBy(duration, cc.p(0, -size.height));
+			var remove = new cc.RemoveSelf(true);
+			var action = new cc.Sequence([move, remove]);
+			enemy.runAction(action);
 		}
-		var size = cc.director.getWinSize();
-		var enemy = cc.Sprite.create(res.img_enemy01);
-		var x = Math.floor( Math.random() * (size.width - 50) );
-		var y = size.height;
-		enemy.setPosition(x , y);
-		this.addChild(enemy, 0);
-		//配列に保存
-		this._enemies.push(enemy); 
-		var randDuration = Math.random() * 2;
-		var baseDuration = 2;
-		var duration = baseDuration + randDuration; // 2～4の間の数字を生成
-		var move = new cc.MoveBy(duration, cc.p(0, -size.height));
-		var remove = new cc.RemoveSelf(true);
-		var action = new cc.Sequence([move, remove]);
-		enemy.runAction(action);
 	},
 	//コイン出現処理
 	spawnCoin: function(){
-		if (this._game_state === GameLayer.GameState["DAMAGE"]) {
-			return false;
+		if (this._game_state === GameLayer.GameState["PLAYING"]) {
+			var size = cc.director.getWinSize();
+			var coin = cc.Sprite.create(res.img_coin01);
+			var x = Math.floor( Math.random() * (size.width - 50) );
+			var y = size.height;
+			coin.setPosition(x , y);
+			this.addChild(coin, 0);
+			//配列に保存
+			this._coins.push(coin)
+			var randDuration = Math.random() * 4;
+			var duration = 5 + randDuration;
+			var move = new cc.MoveBy(duration, cc.p(0, -size.height));
+			var remove = new cc.RemoveSelf(true);
+			var action = new cc.Sequence([move, remove])
+			coin.runAction(action);
 		}
+	},
+	//ゲームスタート処理
+	onGameStart: function(){
 		var size = cc.director.getWinSize();
-		var coin = cc.Sprite.create(res.img_coin01);
-		var x = Math.floor( Math.random() * (size.width - 50) );
-		var y = size.height;
-		coin.setPosition(x , y);
-		this.addChild(coin, 0);
-		//配列に保存
-		this._coins.push(coin)
-		var randDuration = Math.random() * 4;
-		var duration = 5 + randDuration;
-		var move = new cc.MoveBy(duration, cc.p(0, -size.height));
-		var remove = new cc.RemoveSelf(true);
-		var action = new cc.Sequence([move, remove])
-		coin.runAction(action);
+		
+		//カウントダウン
+		var seq = cc.sequence(
+							cc.spawn(
+								cc.moveBy(0.5, 0, 200).easing(cc.easeOut(5)),
+								cc.fadeIn(0.5).easing(cc.easeOut(5))
+							),
+							cc.fadeOut(0.5).easing(cc.easeOut(5))
+						);
+		var count3 = cc.Sprite.create(res.img_countdown3);
+		count3.setPosition(size.width / 2, size.height / 2);
+		count3.setOpacity(0);
+		count3.runAction(
+			cc.sequence(
+				cc.delayTime(0.5),
+				seq,
+				cc.callFunc(function() {
+					this.addChild(count2, 1);
+				}, this),
+				cc.removeSelf()
+			)
+		);
+		this.addChild(count3, 1);
+		
+		var count2 = cc.Sprite.create(res.img_countdown2);
+		count2.setPosition(size.width / 2, size.height / 2);
+		count2.setOpacity(0);
+		count2.runAction(
+			cc.sequence(
+				seq,
+				cc.callFunc(function() {
+					this.addChild(count1, 1);
+				}, this),
+				cc.removeSelf()
+			)
+		);
+		
+		var count1 = cc.Sprite.create(res.img_countdown1);
+		count1.setPosition(size.width / 2, size.height / 2);
+		count1.setOpacity(0);
+		count1.runAction(
+			cc.sequence(
+				seq,
+				cc.callFunc(function() {
+					this.addChild(start, 1);
+					this._game_state = GameLayer.GameState["PLAYING"];
+				}, this),
+				cc.removeSelf()
+			)
+		);
+		
+		var start = cc.Sprite.create(res.img_start);
+		start.setPosition(size.width / 2, size.height / 2);
+		start.runAction(
+			cc.sequence(
+				cc.spawn(
+					cc.scaleTo(0.5, 2.0).easing(cc.easeIn(0.5)),
+					cc.fadeOut(0.5)
+				),
+				cc.removeSelf()
+			)
+		);
 	},
 	//ゲームオーバー処理
-	gameOver: function(){
-		var size = cc.director.getWinSize();
-		var label = cc.LabelTTF.create("ゲームオーバー！", null, 100);
-		label.setPosition(size.width / 2, size.height / 2);
-		label.setColor(cc.color(255,0,0,255));
-		this.addChild(label, 1);
-		this._game_state = GameLayer.GameState["DAMAGE"];
-		
+	onGameOver: function(){
+		this._game_state = GameLayer.GameState["ENDING"];
 		for(var i = 0; i < this._enemies.length; i++){
 			this._enemies[i].pause();
 		}
@@ -239,6 +299,70 @@ var GameLayer = cc.Layer.extend({
 		while(i--){
 			this._coins[i].pause();
 		}
+		
+		var size = cc.director.getWinSize();
+		var gameover = cc.Sprite.create(res.img_gameover);
+		gameover.setPosition(size.width / 2, size.height / 2);
+		gameover.setScale(0);
+		gameover.runAction(
+			cc.sequence(
+				cc.scaleTo(0.5, 1.0).easing(cc.easeExponentialIn()),
+				cc.delayTime(2.0),
+				cc.scaleTo(0.5, 0).easing(cc.easeExponentialIn()),
+				cc.delayTime(0.5),
+				cc.callFunc(function() {
+					this._game_state = GameLayer.GameState["RESULT"];
+					this.onResult();
+				}, this)
+			)
+		);
+		this.addChild(gameover, 1);
+	},
+	//リザルト処理
+	onResult: function(){
+		var size = cc.director.getWinSize();
+		
+		//もう一度ボタン
+		var button = ccui.Button.create();
+		button.setTouchEnabled(true);
+		button.loadTextures(res.img_btnRetry, res.img_btnRetryOn, null);
+		button.setPosition(size.width / 2, size.height / 2 + 100);
+		button.addTouchEventListener(function(sender, type){
+			switch (type) {
+			case ccui.Widget.TOUCH_BEGAN: // ボタンにタッチした時
+				break;
+			case ccui.Widget.TOUCH_MOVED: // ボタンにタッチ中
+				break;
+			case ccui.Widget.TOUCH_ENDED: // ボタンを離した時
+				cc.director.runScene(cc.TransitionFade.create(1, new GameScene()));
+				break;
+			case ccui.Widget.TOUCH_CANCELED: // キャンセルした時
+				break;
+			}
+		}, this);
+		this.addChild(button, 1);
+		
+		
+		//タイトルボタン
+		var button2 = ccui.Button.create();
+		button2.setTouchEnabled(true);
+		button2.loadTextures(res.img_btnReturn, res.img_btnReturnOn, null);
+		button2.setPosition(size.width / 2, size.height / 2 - 100);
+		button2.addTouchEventListener(function(sender, type){
+			switch (type) {
+			case ccui.Widget.TOUCH_BEGAN: // ボタンにタッチした時
+				break;
+			case ccui.Widget.TOUCH_MOVED: // ボタンにタッチ中
+				break;
+			case ccui.Widget.TOUCH_ENDED: // ボタンを離した時
+				cc.director.runScene(cc.TransitionFade.create(1, new TitleScene()));
+				break;
+			case ccui.Widget.TOUCH_CANCELED: // キャンセルした時
+				break;
+			}
+		}, this);
+		this.addChild(button2, 1);
+		
 	},
 });
 
@@ -246,9 +370,8 @@ var GameLayer = cc.Layer.extend({
 GameLayer.GameState = {
 	"READY":   0, // 開始演出中
 	"PLAYING": 1, // プレイ中
-	"DAMAGE": 2, // 被弾
-	"ENDING":  3, // 終了演出中
-	"RESULT":  4  // スコア表示
+	"ENDING":  2, // 終了演出中
+	"RESULT":  3  // スコア表示
 };
 
 
