@@ -1,28 +1,21 @@
 var res = {
+	//タイトル画面
 	img_bgtitle : "./res/bg_title.png",
 	img_title : "./res/title.png",
 	img_btnStart : "./res/btn_start.png",
 	
-	
-	img_chara01 : "./res/chara01.png",
-	img_item01 : "./res/item01.png",
-	img_enemy01 : "./res/item01.png",
-	
-	img_enemy : "./res/Circle.png",
+	//ゲーム画面
+	img_player01 : "./res/player01.png",
+	img_enemy01 : "./res/enemy01.png",
 	img_coin01 : "./res/coin01.png",
+	
+	
+	
+	img_debug : "./res/Circle.png",
 	
 }
 
-var preload_res = [
-	res.img_bgtitle,
-	res.img_title,
-	res.img_btnStart,
-	
-	
-	res.img_enemy,
-	res.img_item01,
-	res.img_chara01,
-	res.img_enemy01,
-	res.img_coin01,
-	
-]
+var preload_res = [];
+for (var i in res) {
+	preload_res.push(res[i]);
+}
