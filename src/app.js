@@ -9,44 +9,73 @@ var TitleScene = cc.Scene.extend({
 var TitleLayer = cc.Layer.extend({
 	ctor:function () {
 		this._super();
-		var size = cc.director.getWinSize();
+		var winSize = cc.director.getWinSize();
+		var winSizeCenterW = winSize.width / 2.0;
+		var winSizeCenterH = winSize.height / 2.0;
 		
-		//背景
+		//背景の配置
 		var bg = cc.Sprite.create(res.img_bgtitle);
-		bg.setPosition(size.width / 2, size.height / 2);
+		bg.setPosition(cc.p(winSizeCenterW, winSizeCenterH));
 		this.addChild(bg, 0);
 		
-		//タイトル
+		//タイトルの配置
 		var title = cc.Sprite.create(res.img_title);
-		title.setPosition(size.width / 2, size.height - 300);
-		title.runAction(
-			cc.sequence(
-				//cc.moveBy(0.5, 0, -375).easing(cc.easeOut(3)),
-				//cc.delayTime(1),
-				cc.callFunc(function(){
-					var seq = cc.sequence(
-						cc.spawn(
-							cc.scaleTo(0.5, 1.3).easing(cc.easeIn(3)),
-							cc.rotateBy(0.5, 10).easing(cc.easeElasticIn()),
-						),
-						cc.rotateBy(0.2, -10),
-						cc.delayTime(0.5),
-						cc.scaleTo(0.5, 1).easing(cc.easeOut(3)),
-						cc.delayTime(0.5),
-					);
-					var repeat = cc.repeatForever(seq);
-					title.runAction(repeat);
-				})
-			)
-		);
+		title.setPosition(cc.p(winSizeCenterW, winSize.height - 300));
+		title.setScale(0);
 		this.addChild(title, 1);
 		
-		//スタートボタン
+		//スタートボタンの配置
 		var button = ccui.Button.create();
 		button.setTouchEnabled(false);
 		button.loadTextures(res.img_btnStart, res.img_btnStartOn, null);
-		button.setPosition(size.width / 2, size.height / 2);
-		button.addTouchEventListener(function(sender, type){ // タッチイベントを設定
+		button.setPosition(cc.p(winSizeCenterW, winSizeCenterH));
+		button.setOpacity(0);
+		this.addChild(button, 1);
+		
+		//タイトルのアニメーション
+		var act = cc.repeat( 
+						cc.sequence(
+							cc.rotateTo(0.05, 10).easing(cc.easeIn(3)),
+							cc.rotateTo(0.05, -10).easing(cc.easeIn(3))
+					), 10);
+		title.runAction(
+			cc.sequence(
+				cc.scaleTo(0.3, 1.0).easing(cc.easeBackOut()),
+				cc.delayTime(2.0),
+				cc.repeat(
+					cc.sequence(
+						cc.rotateBy(0.5, 720).easing(cc.easeIn(3)),
+						cc.delayTime(1.0),
+						cc.spawn(
+							act,
+							cc.scaleTo(0.5, 2.0).easing(cc.easeIn(3)),
+							cc.fadeOut(0.5).easing(cc.easeIn(3))
+						),
+						cc.delayTime(1.0),
+						cc.rotateTo(0, 0),
+						cc.spawn(
+							cc.scaleTo(0.3, 1.0).easing(cc.easeIn(3)),
+							cc.fadeIn(0.3).easing(cc.easeIn(3))
+						),
+						cc.delayTime(1.0),
+					),Math.pow(2, 30)
+				)
+			)
+		);
+		
+		//ボタンのアニメーション
+		button.runAction(
+			cc.sequence(
+				cc.delayTime(0.5),
+				cc.fadeIn(0.3).easing(cc.easeOut(3)),
+				cc.callFunc(function(){
+					button.setTouchEnabled(true);
+				})
+			)
+		);
+		
+		//ボタンのタッチイベントを設定
+		button.addTouchEventListener(function(sender, type){
 			switch (type) {
 			case ccui.Widget.TOUCH_BEGAN: // ボタンにタッチした時
 				break;
@@ -59,17 +88,6 @@ var TitleLayer = cc.Layer.extend({
 				break;
 			}
 		}, this);
-		button.setOpacity(0);
-		button.runAction(
-			cc.sequence(
-				cc.delayTime(1),
-				cc.fadeIn(0.3).easing(cc.easeOut(5)),
-				cc.callFunc(function(){
-					button.setTouchEnabled(true);
-				})
-			)
-		);
-		this.addChild(button, 1);
 	},
 });
 
