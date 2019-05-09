@@ -1,11 +1,14 @@
 var res = {
 	//タイトル画面
-	img_bgtitle : "./res/bg_title.png",
-	img_title : "./res/title.png",
+	img_bgTitle : "./res/bg_title.png",
+	img_titleLogo : "./res/title_logo.png",
+	img_titleImg01 : "./res/title_img01.png",
+	img_titleImg02 : "./res/title_img02.png",
 	img_btnStart : "./res/btn_start.png",
 	img_btnStartOn : "./res/btn_startOn.png",
 	
 	//ゲーム画面
+	img_bgGame : "./res/bg_game.png",
 	img_countdown1 : "./res/countdown1.png",
 	img_countdown2 : "./res/countdown2.png",
 	img_countdown3 : "./res/countdown3.png",

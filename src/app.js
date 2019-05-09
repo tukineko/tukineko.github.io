@@ -6,6 +6,29 @@ var TitleScene = cc.Scene.extend({
 	}
 });
 
+var MagicCircuitNode = cc.Node.extend({
+	_sprite:null,
+	ctor:function () {
+		this._super();
+		this._sprite = cc.Sprite.create(res.img_titleImg02);
+		this._sprite.setScale(0);
+		this.addChild(this._sprite, 0);
+	},
+	onEnter:function(){
+		this._super();
+		var act = cc.spawn(
+			cc.rotateBy(5.0, 360),
+			cc.scaleTo(0.5, 1.0).easing(cc.easeBackOut())
+		);
+		var repeat = cc.repeat(act,Math.pow(2, 30))
+		this._sprite.runAction(repeat);
+	},
+	onExit:function(){
+		this._super();
+		
+	}
+});
+
 var TitleLayer = cc.Layer.extend({
 	ctor:function () {
 		this._super();
@@ -14,23 +37,59 @@ var TitleLayer = cc.Layer.extend({
 		var winSizeCenterH = winSize.height / 2.0;
 		
 		//背景の配置
-		var bg = cc.Sprite.create(res.img_bgtitle);
+		var bg = cc.Sprite.create(res.img_bgTitle);
 		bg.setPosition(cc.p(winSizeCenterW, winSizeCenterH));
 		this.addChild(bg, 0);
 		
 		//タイトルの配置
-		var title = cc.Sprite.create(res.img_title);
+		var title = cc.Sprite.create(res.img_titleLogo);
 		title.setPosition(cc.p(winSizeCenterW, winSize.height - 300));
 		title.setScale(0);
 		this.addChild(title, 1);
+		
+		//キャラクター配置
+		var chara = cc.Sprite.create(res.img_titleImg01);
+		chara.setPosition(cc.p(winSizeCenterW-50, winSizeCenterH-30));
+		chara.setOpacity(0);
+		this.addChild(chara, 1);
+		
+		//魔法陣配置
+		var magic = new MagicCircuitNode();
+		magic.setPosition(cc.p(winSizeCenterW, winSizeCenterH-300));
+		magic.setScale(1.0, 0.5);
+		this.addChild(magic, 0);
 		
 		//スタートボタンの配置
 		var button = ccui.Button.create();
 		button.setTouchEnabled(false);
 		button.loadTextures(res.img_btnStart, res.img_btnStartOn, null);
-		button.setPosition(cc.p(winSizeCenterW, winSizeCenterH));
+		button.setPosition(cc.p(winSizeCenterW, 200));
 		button.setOpacity(0);
-		this.addChild(button, 1);
+		this.addChild(button, 2);
+		
+		//キャラクターのアニメーション
+		chara.runAction(
+			cc.sequence(
+				cc.delayTime(1.0),
+				cc.spawn(
+					cc.moveBy(1.0, cc.p(0, 30)).easing(cc.easeOut(3)),
+					cc.repeat( 
+						cc.sequence(
+							cc.moveBy(0.05, cc.p(5, 0)).easing(cc.easeIn(3)),
+							cc.moveBy(0.05, cc.p(-5, 0)).easing(cc.easeIn(3))
+						), 14),
+					cc.fadeIn(0.5).easing(cc.easeIn(3))
+				),
+				cc.delayTime(1.0),
+				cc.repeat(
+					cc.sequence(
+						cc.moveBy(1.0, cc.p(0, 30)).easing(cc.easeSineIn()),
+						cc.moveBy(1.0, cc.p(0, -30)).easing(cc.easeSineIn()),
+						cc.delayTime(0.3)
+					),Math.pow(2, 30)
+				)
+			)
+		);
 		
 		//タイトルのアニメーション
 		var act = cc.repeat( 
@@ -40,6 +99,7 @@ var TitleLayer = cc.Layer.extend({
 					), 10);
 		title.runAction(
 			cc.sequence(
+				cc.delayTime(3.0),
 				cc.scaleTo(0.3, 1.0).easing(cc.easeBackOut()),
 				cc.delayTime(2.0),
 				cc.repeat(
@@ -66,7 +126,7 @@ var TitleLayer = cc.Layer.extend({
 		//ボタンのアニメーション
 		button.runAction(
 			cc.sequence(
-				cc.delayTime(0.5),
+				cc.delayTime(3.5),
 				cc.fadeIn(0.3).easing(cc.easeOut(3)),
 				cc.callFunc(function(){
 					button.setTouchEnabled(true);
@@ -110,7 +170,7 @@ var GameLayer = cc.Layer.extend({
 		var size = cc.director.getWinSize();
 		
 		//背景
-		var bg = cc.Sprite.create(res.img_bgtitle);
+		var bg = cc.Sprite.create(res.img_bgGame);
 		bg.setPosition(size.width / 2, size.height / 2);
 		this.addChild(bg, 0);
 		
