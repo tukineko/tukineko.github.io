@@ -7,5 +7,6 @@
 		"src/resource.js",
 		"src/TitleScene.js",
 		"src/app.js"
+		
 	]
 }
