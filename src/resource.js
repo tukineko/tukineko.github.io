@@ -29,7 +29,7 @@ var res = {
 	
 }
 
-var preload_res = [];
+var g_resources = [];
 for (var i in res) {
-	preload_res.push(res[i]);
+	g_resources.push(res[i]);
 }

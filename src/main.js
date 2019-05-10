@@ -5,7 +5,7 @@ window.onload = function(){
 		cc.view.resizeWithBrowserSize(true);
 		
 		//load resources
-		cc.LoaderScene.preload(preload_res, function () {
+		cc.LoaderScene.preload(g_resources, function () {
 			cc.director.runScene(new TitleScene());
 		}, this);
 	};
