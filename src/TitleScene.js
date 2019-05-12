@@ -107,6 +107,29 @@ var TitleLayer = cc.Layer.extend({
 				break;
 			}
 		}, this);
+		
+		//スタートボタン2の配置
+		var btnStart2 = ccui.Button.create();
+		btnStart2.setTouchEnabled(true);
+		btnStart2.loadTextures(res.img_btnStart, res.img_btnStartOn, null);
+		btnStart2.setPosition(cc.p(10, 10));
+		btnStart2.setScale(0.5);
+		this.addChild(btnStart2, 2);
+		
+		//スタートボタン2のタッチイベントを設定
+		btnStart2.addTouchEventListener(function(sender, type){
+			switch (type) {
+			case ccui.Widget.TOUCH_BEGAN: // ボタンにタッチした時
+				break;
+			case ccui.Widget.TOUCH_MOVED: // ボタンにタッチ中
+				break;
+			case ccui.Widget.TOUCH_ENDED: // ボタンを離した時
+				cc.director.runScene(cc.TransitionFade.create(1, new GameScene2()));
+				break;
+			case ccui.Widget.TOUCH_CANCELED: // キャンセルした時
+				break;
+			}
+		}, this);
 	},
 	onEnter: function() {
 		this._super();
