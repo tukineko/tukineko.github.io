@@ -1,3 +1,4 @@
+//タイトルアニメーションフラグ
 var g_runTitleAnime = false;
 
 var TitleScene = cc.Scene.extend({

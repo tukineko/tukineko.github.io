@@ -24,6 +24,10 @@ var res = {
 	img_btnReturn : "./res/btn_return.png",
 	img_btnReturnOn : "./res/btn_returnOn.png",
 	
+	img_chara : "./res/game_item01.png",
+	img_item01 : "./res/game_item01.png",
+	
+	img_number : "./res/number.png",
 	
 	img_debug : "./res/Circle.png",
 	

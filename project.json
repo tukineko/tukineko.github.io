@@ -1,12 +1,13 @@
 {
-    "debugMode"     : 1,
-    "frameRate"     : 60,
-    "id"            : "gameCanvas",
-    "renderMode"    : 1,
-    "jsList"        : [
+	"debugMode"     : 1,
+	"frameRate"     : 60,
+	"id"            : "gameCanvas",
+	"renderMode"    : 1,
+	"modules" : ["cocos2d", "chipmunk"],
+	"jsList"        : [
 		"src/resource.js",
 		"src/TitleScene.js",
-		"src/app.js"
-		
+		"src/GameScene.js",
+		"src/GameScene2.js"
 	]
 }
