@@ -130,6 +130,29 @@ var TitleLayer = cc.Layer.extend({
 				break;
 			}
 		}, this);
+		
+		//スタートボタン3の配置
+		var btnStart3 = ccui.Button.create();
+		btnStart3.setTouchEnabled(true);
+		btnStart3.loadTextures(res.img_btnStart, res.img_btnStartOn, null);
+		btnStart3.setPosition(cc.p(this._winSize.width - 10, 10));
+		btnStart3.setScale(0.5);
+		this.addChild(btnStart3, 2);
+		
+		//スタートボタン2のタッチイベントを設定
+		btnStart3.addTouchEventListener(function(sender, type){
+			switch (type) {
+			case ccui.Widget.TOUCH_BEGAN: // ボタンにタッチした時
+				break;
+			case ccui.Widget.TOUCH_MOVED: // ボタンにタッチ中
+				break;
+			case ccui.Widget.TOUCH_ENDED: // ボタンを離した時
+				cc.director.runScene(cc.TransitionFade.create(1, new TestScene()));
+				break;
+			case ccui.Widget.TOUCH_CANCELED: // キャンセルした時
+				break;
+			}
+		}, this);
 	},
 	onEnter: function() {
 		this._super();

@@ -76,8 +76,6 @@ var GameLayer = cc.Layer.extend({
 		
 	},
 	update:function () {
-		var size = cc.director.getWinSize();
-		
 		if (this._game_state === GameLayer.GameState["PLAYING"]) {
 
 			// 自キャラの判定ボックス

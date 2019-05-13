@@ -17,7 +17,6 @@ var res = {
 	
 	img_player01 : "./res/player01.png",
 	img_enemy01 : "./res/enemy01.png",
-	img_coin01 : "./res/coin01.png",
 	
 	img_btnRetry : "./res/btn_retry.png",
 	img_btnRetryOn : "./res/btn_retryOn.png",
