@@ -1,10 +1,42 @@
-
+var TestLayerPlayer = cc.Node.extend({
+	ctor: function () {
+		this._super();
+		cc.log("**** ctor: TestLayerPlayer ****");
+		this._winSize = cc.director.getWinSize();
+		this._winSizeCenterW = this._winSize.width / 2.0;
+		this._winSizeCenterH = this._winSize.height / 2.0;
+		
+		var player = cc.Sprite.create(res.img_player01);
+		player.setPosition(cc.p(this._winSizeCenterW, this._winSizeCenterH));
+		player.setTag(1);
+		player.setName("player");
+		this.addChild(player, 0);
+		
+		var playerHitCircle = new cc.DrawNode();
+		playerHitCircle.drawDot(cc.p(this._winSizeCenterW, this._winSizeCenterH), 20, cc.color(0, 255, 0, 255));
+		playerHitCircle.setTag(2);
+		playerHitCircle.setName("playerHitCircle");
+		this.addChild(playerHitCircle, 1);
+		
+	},
+	
+	getPlayerRect: function(){
+		return this.getChildByTag(1).getBoundingBox();
+	},
+});
 
 var TestLayer = cc.Layer.extend({
 	space: null,
 	ctor:function () {
 		this._super();
-
+		
+		var test = new TestLayerPlayer();
+		cc.log(test.getChildByTag(1));
+		this.addChild(test, 10);
+		cc.log(test.getPlayerRect());
+		
+		
+		
 		this.initSpace();
 		this.createPhysicsSprite();
 		this.createFloor();
@@ -18,7 +50,7 @@ var TestLayer = cc.Layer.extend({
 		this.space.gravity = cp.v(0, 0);
 
 		// shapeを可視化する（デバッグ用）
-		this.addChild(new cc.PhysicsDebugNode(this.space));
+		this.addChild(new cc.PhysicsDebugNode(this.space), 100);
 
 		this.scheduleUpdate();
 		
