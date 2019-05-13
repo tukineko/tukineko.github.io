@@ -1,4 +1,24 @@
-
+var PlayerNode = cc.Node.extend({
+	ctor: function () {
+		this._super();
+		cc.log("**** ctor: TestLayerPlayer ****");
+		this._winSize = cc.director.getWinSize();
+		this._winSizeCenterW = this._winSize.width / 2.0;
+		this._winSizeCenterH = this._winSize.height / 2.0;
+		
+		var player = cc.Sprite.create(res.img_player01);
+		player.setPosition(cc.p(0, 0));
+		player.setTag(1);
+		this.addChild(player, 0);
+		
+		var playerHitCircle = new cc.DrawNode();
+		playerHitCircle.drawDot(cc.p(0, 0), 20, cc.color(0, 255, 0, 255));
+		playerHitCircle.setTag(2);
+		this.addChild(playerHitCircle, 1);
+		
+	},
+	
+});
 
 var GameLayer = cc.Layer.extend({
 	_winSize: null,
@@ -37,7 +57,8 @@ var GameLayer = cc.Layer.extend({
 		this.viewScore(this._score);
 		
 		//自キャラ
-		var player = cc.Sprite.create(res.img_player01);
+		//var player = cc.Sprite.create(res.img_player01);
+		var player = new PlayerNode();
 		player.setPosition(cc.p(this._winSizeCenterW, 300));
 		this.addChild(player, 1);
 		this._player = player;
@@ -51,8 +72,6 @@ var GameLayer = cc.Layer.extend({
 		//1秒ごとに敵出現
 		this.schedule(this.spawnEnemy, 1.0);
 		
-		
-		
 		//タッチイベント
 		cc.eventManager.addListener({
 			event: cc.EventListener.TOUCH_ONE_BY_ONE,
@@ -65,8 +84,8 @@ var GameLayer = cc.Layer.extend({
 					var delta = touch.getDelta();
 					var position = this._player.getPosition();
 					var newPosition = cc.pAdd(position, delta);
-					this._player.setPosition(cc.pClamp(newPosition, cc.p((this._player.width / 2), position.y), cc.p(this._winSize.width - (this._player.width / 2), position.y)));
-					//this._player.setPosition(cc.pClamp(newPosition, cc.p((this._player.width / 2), 200), cc.p(this._winSize.width - (this._player.width / 2), this._winSizeCenterH)));
+					
+					this._player.setPosition(cc.pClamp(newPosition, cc.p(20, position.y), cc.p(this._winSize.width - 20, position.y)));
 				}
 			}.bind(this),
 			onTouchEnded: function(touch, event) {
@@ -79,7 +98,7 @@ var GameLayer = cc.Layer.extend({
 		if (this._game_state === GameLayer.GameState["PLAYING"]) {
 
 			// 自キャラの判定ボックス
-			var playerRect = this._player.getBoundingBox();
+			var playerRect = this._player.getBoundingBoxToWorld();
 			var playerPoint = this._player.getPosition();
 			
 			//令和衝突判定
@@ -90,9 +109,12 @@ var GameLayer = cc.Layer.extend({
 				}
 			}, this);
 			
-			// 敵衝突判定
+			// 敵衝突判定(円と短形)
 			this._enemies.forEach(function(element, index, array) {
-				var isHit = cc.rectContainsPoint(element.getBoundingBox(), playerPoint);
+				var pos = cc.p(cc.clampf(playerPoint.x , element.getBoundingBox().x , element.getBoundingBox().x + element.width),
+							cc.clampf(playerPoint.y , element.getBoundingBox().y , element.getBoundingBox().y + element.height));
+				var radius = 20.0;
+				var isHit = cc.pDistance(playerPoint , pos) < radius;
 				if (isHit) {
 					//this.hitEnemy(element);
 					this.onGameOver();

@@ -31,9 +31,7 @@ var TestLayer = cc.Layer.extend({
 		this._super();
 		
 		var test = new TestLayerPlayer();
-		cc.log(test.getChildByTag(1));
 		this.addChild(test, 10);
-		cc.log(test.getPlayerRect());
 		
 		
 		
@@ -55,6 +53,12 @@ var TestLayer = cc.Layer.extend({
 		this.scheduleUpdate();
 		
 		//this.schedule(this.createPhysicsSprite, 0.5, 2);
+	},
+	getRect: function(node) {
+		var point = node.getPosition();
+		var width = node.getContentSize().width;
+		var height = node.getContentSize().height;
+		return cc.rect(point.x - (width / 2), point.y - (height / 2), width, height);
 	},
 	createPhysicsSprite: function() {
 
@@ -81,20 +85,23 @@ var TestLayer = cc.Layer.extend({
 		physicsSprite.setPosition(cc.winSize.width / 2, cc.winSize.height / 2);
 		this.addChild(physicsSprite);
 		
-		
-		var prevPos = null;
+		var touchPoint = null;
 		
 		//タッチイベント
 		cc.eventManager.addListener({
 			event: cc.EventListener.TOUCH_ONE_BY_ONE,
 			onTouchBegan: function(touch, event) {
-				var pos = touch.getLocation();
-				prevPos = pos;
-				return true;
+				var characterRect = this.getRect(physicsSprite);
+				touchPoint = touch.getLocation();
+				return cc.rectContainsPoint(characterRect, touchPoint);
+			}.bind(this),
+			onTouchMoved: function(touch, event){
+				
 			}.bind(this),
 			onTouchEnded: function(touch, event) {
 				var endPoint = touch.getLocation();
-				var force = cp.v((prevPos.x - endPoint.x) * 150, (prevPos.y - endPoint.y) * 150);
+				var force = cp.v((touchPoint.x - endPoint.x) * 150, (touchPoint.y - endPoint.y) * 150);
+				cc.log(force);
 				//body.applyImpulse(cp.v(cc.winSize.width * 150, 100 * 1500), cp.v(0, 0));
 				body.applyImpulse(force, cp.v(0, 0));
 				
