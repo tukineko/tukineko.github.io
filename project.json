@@ -2,7 +2,7 @@
 	"debugMode"     : 1,
 	"frameRate"     : 60,
 	"id"            : "gameCanvas",
-	"renderMode"    : 1,
+	"renderMode"    : 0,
 	"modules" : ["cocos2d", "chipmunk"],
 	"jsList"        : [
 		"src/resource.js",
