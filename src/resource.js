@@ -29,7 +29,8 @@ var res = {
 	img_number : "./res/number.png",
 	
 	img_debug : "./res/Circle.png",
-	
+	img_bgGame2 : "./res/bg_game2.png",
+	img_bgGame3 : "./res/bg_game3.png",
 }
 
 var g_resources = [];
