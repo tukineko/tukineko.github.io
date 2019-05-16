@@ -21,6 +21,22 @@ var TestLayer = cc.Layer.extend({
 		this._winSizeCenterH = this._winSize.height / 2.0;
 		
 		
+		var gridNodeTarget = new cc.NodeGrid();
+		this.addChild(gridNodeTarget, 2);
+		
+		
+		var chara = cc.Sprite.create(res.img_titleImg01);
+		chara.setPosition(cc.p(this._winSizeCenterW, this._winSizeCenterH));
+		gridNodeTarget.addChild(chara);
+		
+		gridNodeTarget.setAnchorPoint(cc.p(this._winSizeCenterW, this._winSizeCenterH));
+		gridNodeTarget.rotationY = 30;
+		
+		cc.log(gridNodeTarget);
+		
+		
+		
+		
 		var node = cc.ParallaxNode.create();
 		
 		var chara = cc.Sprite.create(res.img_titleImg01);
