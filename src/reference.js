@@ -44,7 +44,12 @@ var TestLayer = cc.Layer.extend({
 		var repeat = cc.repeat(act,Math.pow(2, 30));
 		node.runAction(repeat);
 		
-		
+		var size = cc.winSize;
+		this._emitter = new cc.ParticleFire();
+		this.addChild(this._emitter, 10);
+		this._emitter.texture = cc.textureCache.addImage(res.img_debug);
+		this._emitter.x = cc.winSize.width / 2;
+		this._emitter.y = cc.winSize.height / 2;
 		
 		
 		//背景
@@ -85,7 +90,7 @@ var TestLayer = cc.Layer.extend({
 		this.addChild(bgNode2, 0);
 		this._bg2 = bgNode2;
 		
-
+		
 		
 		
 		//フレーム更新

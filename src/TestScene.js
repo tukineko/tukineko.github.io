@@ -20,27 +20,43 @@ var TestLayer = cc.Layer.extend({
 		
 		
 		
-		var bg = new cc.Sprite(res.img_bgGame4);
+		//背景
+		var bg = cc.Sprite.create(res.img_bgGame2);
 		bg.setAnchorPoint(cc.p(0, 0));
-		bg.setPosition(cc.p(0, 0));
-		this.addChild(bg);
+		bg.setTag(1);
+		
+		var bg2 = cc.Sprite.create(res.img_bgGame3);
+		bg2.setAnchorPoint(cc.p(0, 0));
+		bg2.setTag(1);
+		
+		var bgNode = cc.ParallaxNode.create();
+		bgNode.addChild(bg, 1, cc.p(1, 1), cc.p(0,0));
+		this.addChild(bgNode, 0);
+		this._bg = bgNode;
+		
+		var bgNode2 = cc.ParallaxNode.create();
+		bgNode2.setPosition(cc.p(0, bgNode.getChildByTag(1).height));
+		bgNode2.addChild(bg2, 1, cc.p(1, 1), cc.p(0,0));
+		this.addChild(bgNode2, 0);
+		this._bg2 = bgNode2;
 		
 		
 		
+		var gridNodeTarget = new cc.NodeGrid();
+		this.addChild(gridNodeTarget, 2);
 		
-		var color = cc.color(128,128,128);
-		this.setColor(color);
-
-		var size = cc.winSize;
-
-		this._emitter = new cc.ParticleFire();
-		this.addChild(this._emitter, 10);
-
-		//画像はcocos2d-jsのsamples/js-tests/resのものを使用
-		this._emitter.texture = cc.textureCache.addImage(res.img_debug);
-
-		this._emitter.x = cc.winSize.width / 2;
-		this._emitter.y = cc.winSize.height / 2;
+		
+		var chara = cc.Sprite.create(res.img_titleImg01);
+		chara.setPosition(cc.p(this._winSizeCenterW, this._winSizeCenterH));
+		gridNodeTarget.addChild(chara);
+		
+		gridNodeTarget.setAnchorPoint(cc.p(this._winSizeCenterW, this._winSizeCenterH));
+		gridNodeTarget.rotationY = 30;
+		
+		cc.log(gridNodeTarget);
+		
+		//var act = new cc.RotateTo(3.0, 0, 90);
+		//gridNodeTarget.runAction(act);
 		
 		
 		
@@ -49,18 +65,14 @@ var TestLayer = cc.Layer.extend({
 		
 	},
 	update:function () {
-		
-	},
-	setQuad:function(node){
-		var Quad = cc.V3F_C4B_T2F_Quad();
-		cc.log(Quad);
-		var size = node.getContentSize();
-		var v = [
-			cc.Vertex3F(0,0, 0),
-			cc.Vertex3F(0, size.height, 0),
-			cc.Vertex3F(size.width, size.height, 0),
-			cc.Vertex3F(size.width, 0, 0),
-		];
-		node.quad = v;
+		this._bg.setPositionY(this._bg.getPositionY() - 5);
+		this._bg2.setPositionY(this._bg2.getPositionY() - 5);
+
+		if (this._bg2.getPositionY() < 0) {
+			this._bg.setPositionY(this._bg2.getPositionY() + this._bg2.getChildByTag(1).height);
+
+			// 背景AとBの変数を入れ替える
+			[this._bg, this._bg2] = [this._bg2, this._bg];
+		}
 	}
 });
