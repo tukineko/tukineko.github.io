@@ -7,9 +7,10 @@
 	"modules" : ["cocos2d", "chipmunk"],
 	"jsList"        : [
 		"src/resource.js",
+		"src/Common.js",
+		"src/MenuScene.js",
 		"src/TitleScene.js",
 		"src/GameScene.js",
-		"src/GameScene2.js",
-		"src/TestScene.js"
+		"src/GameScene2.js"
 	]
 }
