@@ -15,6 +15,7 @@ var res = {
 	img_Floor2 : "./res/img/game/floor2.png",
 	img_Block : "./res/img/game/block.png",
 	img_gamePlayer : "./res/img/game/player.png",
+	img_dumy : "./res/img/game/sprite.png",
 	
 	//ゲーム2タイトル画面
 	img_title2Chara : "./res/img/game2/img01.png",

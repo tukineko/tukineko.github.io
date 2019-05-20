@@ -1,23 +1,21 @@
-var GameScene = cc.Scene.extend({
-	onEnter:function () {
-		this._super();
-		var layer = new GameLayer();
-		this.addChild(layer);
-	}
-});
 
 var GameLayer = cc.Layer.extend({
 	space: null,
 	_winSize: null,
 	_winSizeCenterW: null,
 	_winSizeCenterH: null,
+	_game_state: null,
+	_player:null,
 	_bg: null,
 	_bg2: null,
 	_bgfloor: null,
 	_bgfloor2: null,
 	_bgfloor3: null,
 	_bgfloor4: null,
-	_block: null,
+	_scoreBatchNode: null,
+	_score: null,
+	_block: [],
+	_blockHit: [],
 	ctor:function () {
 		this._super();
 		cc.log("**** ctor: GameLayer  ****");
@@ -25,13 +23,80 @@ var GameLayer = cc.Layer.extend({
 		this._winSizeCenterW = this._winSize.width / 2.0;
 		this._winSizeCenterH = this._winSize.height / 2.0;
 		
+		//初期化
+		this._block = [];
+		this._blockHit = [];
+		this._score = 0;
+		
+		//スコア画像はBatchNodeで処理
+		this._scoreBatchNode = new cc.SpriteBatchNode(res.img_number);
+		this.addChild(this._scoreBatchNode, 5);
+		//スコア表示
+		this.viewScore(this._score);
+		
 		//背景描画
 		this.drawBg();
-		this.drawBlock();
+		
+		//壁生成
+		this.schedule(this.drawBlock, 2.0);
 		
 		this.initSpace();
 		this.createPhysicsSprite();
 		this.createFloor();
+		
+	},
+	update: function(dt) {
+		// 物理エンジンの更新
+		if (this._game_state === GameLayer.GameState["PLAYING"]) {
+			this.space.step(dt);
+		
+			//背景スクロール処理
+			this.scrollBg();
+
+			// 自キャラの判定ボックス
+			var playerRect = this._player.getBoundingBoxToWorld();
+
+			//衝突判定
+			this._blockHit.forEach(function(element, index, array) {
+				var isHit = cc.rectIntersectsRect(playerRect, element.getBoundingBox());
+				if (isHit) {
+					this.hitBlockH(element);
+				}
+			}, this);
+
+			this._block.forEach(function(element, index, array) {
+				var isHit = cc.rectIntersectsRect(playerRect, element.getBoundingBox());
+				if (isHit) {
+					this.onGameOver();
+				}
+			}, this);
+		}
+	},
+	//トランジション終わり時
+	onEnterTransitionDidFinish: function() {
+		this._super();
+		this._game_state = GameLayer.GameState["PLAYING"];
+	},
+	//スコア表示処理
+	viewScore: function(score){
+		var text = ('0000000000' + score).slice(-8);
+		var leng = text.length;
+		var num = text.split('');
+		var sprites = [];
+		var scale = 1.0;
+		var portionSize = 64;
+		
+		//初期化
+		this._scoreBatchNode.removeAllChildren();
+		
+		num.reverse();
+		for(var i = 0; i < leng; i += 1) {
+			var number = cc.Sprite.createWithTexture(this._scoreBatchNode.getTexture(), cc.rect(0, 0, portionSize, portionSize));
+			number.setPosition(cc.p((this._winSize.width - 50 ) - (i * portionSize * scale), this._winSize.height - 50));
+			number.setTextureRect(cc.rect(portionSize * num[i], 0, portionSize, portionSize));
+			number.setScale(scale);
+			this._scoreBatchNode.addChild(number);
+		}
 		
 	},
 	//背景描画
@@ -100,38 +165,64 @@ var GameLayer = cc.Layer.extend({
 		
 	},
 	drawBlock: function() {
-		var blockTop = new cc.Sprite(res.img_Block);
-		blockTop.anchorX = 0;
-		blockTop.setPosition(cc.p(this._winSize.width, this._winSize.height - 200));
-		blockTop.setTag(1);
+		if (this._game_state === GameLayer.GameState["PLAYING"]) {
+			
+			var action = cc.sequence(
+				cc.moveBy(3.0, cc.p(-this._winSize.width-150, 0)),
+				cc.removeSelf()
+			);
+
+			var action2 = cc.sequence(
+				cc.moveBy(3.0, cc.p(-this._winSize.width-150, 0)),
+				cc.removeSelf()
+			);
+
+			var action3 = cc.sequence(
+				cc.moveBy(3.0, cc.p(-this._winSize.width-150, 0)),
+				cc.removeSelf()
+			);
+
+			var x = this._winSize.width + 75;
+			var y = Math.floor( Math.random() * 900) + 700;
+			var blockTopY = y + 250;
+			var blockBottomY = y - 250;
 		
-		var blockBottom = new cc.Sprite(res.img_Block);
-		blockBottom.anchorX = 0;
-		blockBottom.setPosition(cc.p(this._winSize.width, 200));
-		blockBottom.setTag(2);
-		
-		var blockWap = new cc.Node();
-		blockWap.addChild(blockTop);
-		blockWap.addChild(blockBottom);
-		//blockWap.setTextureRect(cc.rect(0, 0, 150, 3000));
-		this.addChild(blockWap, 1);
-		this._block = blockWap;
+			var blockTop = new cc.Sprite(res.img_Block);
+			blockTop.anchorY = 0;
+			blockTop.setPosition(cc.p(x, blockTopY));
+			blockTop.runAction(action);
+			this.addChild(blockTop, 1);
+			this._block.push(blockTop);
+
+			var blockBottom = new cc.Sprite(res.img_Block);
+			blockBottom.anchorY = 1;
+			blockBottom.setPosition(cc.p(x, blockBottomY));
+			blockBottom.runAction(action2);
+			this.addChild(blockBottom, 1);
+			this._block.push(blockBottom);
+
+			var blockHit = new cc.Sprite(res.img_dumy);
+			blockHit.setTextureRect(cc.rect(0, 0, 150, 500));
+			blockHit.setPosition(cc.p(x, y));
+			blockHit.runAction(action3);
+			this.addChild(blockHit, 1);
+			this._blockHit.push(blockHit);
+		}
 		
 	},
-	scrollBlock: function() {
-		//ブロック
-		this._block.getChildByTag(1).setPositionX(this._block.getChildByTag(1).getPositionX() - 10);
-		this._block.getChildByTag(2).setPositionX(this._block.getChildByTag(2).getPositionX() - 10);
-		//cc.log(this._block.getChildByTag(1).getPositionX());
-		if (this._block.getChildByTag(1).getPositionX() < -150) {
-			//var y = Math.floor( Math.random() * 300) + 200;
-			
-			this._block.getChildByTag(1).setPositionX(this._winSize.width);
-			//this._block.getChildByTag(1).setPositionY(this._block.getChildByTag(1).getPositionY() - y);
-			
-			this._block.getChildByTag(2).setPositionX(this._winSize.width);
-			//this._block.getChildByTag(2).setPositionY(y);
-		}
+	hitBlockH: function(chara){
+		//点数加算
+		this._score++;
+		this.viewScore(this._score);
+		
+		//配列から削除
+		this._blockHit.forEach(function(element, index, array) {
+			if(element === chara) {
+				array.splice(index, 1);
+				return;
+			}
+		});
+		
 	},
 	initSpace: function() {
 		this.space = new cp.Space();
@@ -166,6 +257,7 @@ var GameLayer = cc.Layer.extend({
 		physicsSprite.setBody(body);
 		physicsSprite.setPosition(this._winSizeCenterW - 350, this._winSizeCenterH);
 		this.addChild(physicsSprite, 4);
+		this._player = physicsSprite;
 		
 		//タッチイベント
 		cc.eventManager.addListener({
@@ -194,14 +286,56 @@ var GameLayer = cc.Layer.extend({
 		this.space.addShape(bottomBar);
 		
 	},
-	update: function(dt) {
-		// 物理エンジンの更新
-		this.space.step(dt);
+	//ゲームオーバー処理
+	onGameOver: function(){
+		this._game_state = GameLayer.GameState["ENDING"];
 		
-		//背景スクロール処理
-		this.scrollBg();
+		for(var i = 0; i < this._block.length; i++){
+			this._block[i].pause();
+		}
+		for(var i = 0; i < this._blockHit.length; i++){
+			this._blockHit[i].pause();
+		}
 		
-		//ブロックスクロール処理
-		this.scrollBlock();
+		this._game_state = GameLayer.GameState["RESULT"];
+		this.onResult();
 	},
+	//リザルト処理
+	onResult: function(){
+		
+		//メニューボタン
+		var item1 = new cc.MenuItemImage(res.img_btnRetry, res.img_btnRetryOn, function(){
+			cc.director.runScene(cc.TransitionFade.create(1, new GameScene()));
+		});
+		var item2 = new cc.MenuItemImage(res.img_btnReturn, res.img_btnReturnOn, function(){
+			cc.director.runScene(cc.TransitionFade.create(1, new TitleScene()));
+		});
+		
+		var menu = new cc.Menu(item1, item2);
+		menu.alignItemsVerticallyWithPadding(50);
+		menu.setPosition(this._winSizeCenterW, this._winSizeCenterH);
+		this.addChild(menu, 10);
+		
+		
+	},
+	
+});
+
+// ゲームの状態
+GameLayer.GameState = {
+	"READY":   0, // 開始演出中
+	"PLAYING": 1, // プレイ中
+	"ENDING":  2, // 終了演出中
+	"RESULT":  3  // スコア表示
+};
+
+var GameScene = cc.Scene.extend({
+	onEnter:function () {
+		this._super();
+		var layer = new GameLayer();
+		this.addChild(layer);
+		
+		//var layer2 = new GridLayer();
+		//this.addChild(layer2);
+	}
 });
