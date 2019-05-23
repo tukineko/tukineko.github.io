@@ -11,6 +11,7 @@
 		"src/MenuScene.js",
 		"src/TitleScene.js",
 		"src/GameScene.js",
-		"src/GameScene2.js"
+		"src/GameScene2.js",
+		"src/TestScene.js"
 	]
 }
