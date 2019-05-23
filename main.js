@@ -7,7 +7,7 @@ window.onload = function(){
 		//load resources
 		cc.LoaderScene.preload(g_resources, function () {
 			//cc.director.runScene(new MenuScene());
-			cc.director.runScene(new TestScene());
+			cc.director.runScene(new GameScene3());
 		}, this);
 	};
 	cc.game.run("gameCanvas");

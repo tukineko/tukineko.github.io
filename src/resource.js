@@ -40,7 +40,13 @@ var res = {
 	img_chara : "./res/img/game2/game_item01.png",
 	img_number : "./res/img/game2/number.png",
 	
-	
+	//ゲーム3
+	img_puzzle1 : "./res/img/game3/puzzle1.png",
+	img_puzzle2 : "./res/img/game3/puzzle2.png",
+	img_puzzle3 : "./res/img/game3/puzzle3.png",
+	img_puzzle4 : "./res/img/game3/puzzle4.png",
+	img_puzzle5 : "./res/img/game3/puzzle5.png",
+	img_puzzle6 : "./res/img/game3/puzzle6.png",
 	
 }
 
