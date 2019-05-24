@@ -27,16 +27,36 @@ var GameLayer3 = cc.Layer.extend({
 		//タッチイベント
 		cc.eventManager.addListener({
 			event: cc.EventListener.TOUCH_ONE_BY_ONE,
+			_node:null,
+			_nodeNew:null,
 			onTouchBegan: function(touch, event) {
-				var location = touch.getLocation();
-				this.hitDrop(location);
+				var point = touch.getLocation();
+				var i = this._drops.length;
+				this._node = null;
+				this._nodeNew = null;
+				while(i--) {
+					if(cc.rectContainsPoint(this._drops[i].getBoundingBox(), point)) {
+						this._node = this._drops[i];
+						this._node.opacity = 128;
+						this._nodeNew = this.DropSprite(0);
+						this._nodeNew.setPosition(cc.p(this._node.getPosition().x, this._node.getPosition().y));
+						this.addChild(this._nodeNew);
+					}
+				}
 				
 				return true;
 			}.bind(this),
 			onTouchMoved: function(touch, event){
+				var delta = touch.getDelta();
+				var position = this._nodeNew.getPosition();
+				var newPosition = cc.pAdd(position, delta);
+				this._nodeNew.setPosition(newPosition);
 				
 			}.bind(this),
 			onTouchEnded: function(touch, event) {
+				this._node.opacity = 255;
+				this._nodeNew.removeFromParentAndCleanup(true);
+				
 				
 			}.bind(this)
 		}, this);
@@ -47,22 +67,18 @@ var GameLayer3 = cc.Layer.extend({
 	update:function () {
 		
 	},
-	hitDrop:function(location){
-		this._drops.forEach(function(element, index, array) {
-			if(cc.rectIntersectsRect(element.getBoundingBox(), location)){
-				cc.log(element.tag);
-			}
-		}, this);
-	},
 	showDrop:function(){
-		for (var x = 0; x < 6; x++){
-			for(var y = 0; y < 6; y++){
-				var rand = Math.floor( Math.random() * 6);
+		var typeMax = 3;
+		var widthMax = 3;
+		var heightMax = 3;
+		for (var x = 0; x < widthMax; x++){
+			for(var y = 0; y < heightMax; y++){
+				var rand = Math.floor( Math.random() * typeMax);
 				var sprite = this.DropSprite(rand);
 				var posX = 250 + (x * sprite.getContentSize().width);
 				var posY = 650 + (y * sprite.getContentSize().height);
 				sprite.setPosition(cc.p(posX, posY));
-				var tag = (x+1) + (y*6);
+				var tag = (x+1) + (y*widthMax);
 				this.addChild(sprite, 0, tag);
 				this._drops.push(sprite);
 			}
