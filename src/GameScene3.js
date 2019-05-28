@@ -1,6 +1,6 @@
-var g_typeMax = 5; //6まで
-var g_lineXMax = 5;
-var g_lineYMax = 5;
+var g_typeMax = 6; //6まで
+var g_lineXMax = 3;
+var g_lineYMax = 3;
 
 var GameScene3 = cc.Scene.extend({
 	onEnter:function () {
@@ -21,6 +21,7 @@ var GameLayer3 = cc.Layer.extend({
 	_dropTags: null,
 	_cells: null,
 	_dropRomoveTags: [],
+	_board: null,
 	ctor:function () {
 		this._super();
 		cc.log("**** ctor: GameLayer3  ****");
@@ -28,15 +29,148 @@ var GameLayer3 = cc.Layer.extend({
 		this._winSizeCenterW = this._winSize.width / 2.0;
 		this._winSizeCenterH = this._winSize.height / 2.0;
 		
-		//パズルの表示
-		this.showDrop();
-		cc.log(this._cells);
+		//変数の初期化
+		this._board = null;
+		
+		//パズルの初期表示
+		this.initDrop();
+		cc.log(this._board);
 		
 		//フレーム更新
 		this.scheduleUpdate();
+		
+		//タッチイベント
+		cc.eventManager.addListener({
+			event: cc.EventListener.TOUCH_ONE_BY_ONE,
+			swallowTouches: true,
+			_moveObj : null,
+			onTouchBegan: function(touch, event) {
+				var point = touch.getLocation();
+				//タッチしたパズル玉のオブジェクトを返す
+				var moveObj = this.TouchDrop(point);
+				if(moveObj){
+					moveObj.sprite.opacity = 128;
+					this._moveObj = moveObj;
+					return true;
+				}
+				return false;
+				
+			}.bind(this),
+			onTouchMoved: function(touch, event){
+				//選択したパズル玉の移動
+				this._moveObj.sprite.setPosition(cc.pAdd(this._moveObj.sprite.getPosition(), touch.getDelta()));
+				
+				var nextObj = this.nextTouchDrop(this._moveObj);
+				if(nextObj){
+					this.swapObj(this._moveObj, nextObj);
+					
+				}
+			}.bind(this),
+			onTouchEnded: function(touch, event) {
+				this._moveObj.sprite.opacity = 255;
+				this._moveObj.sprite.setPosition(cc.p(this._board[this._moveObj.aryX][this._moveObj.aryY].posX, this._board[this._moveObj.aryX][this._moveObj.aryY].posY));
+				cc.log(this._board);
+				//盤面のパズルをチェック
+				//this.checkBoardDrop();
+
+			}.bind(this)
+		}, this);
 	},
 	update:function () {
 		
+	},
+	//オブジェクト同士の入れ替え
+	swapObj: function(moveObj, nextObj){
+		//移動先の位置を記憶
+		var tmpPosX = nextObj.posX;
+		var tmpPosY = nextObj.posY;
+		
+		//移動先のパズル玉の位置を入れ替え
+		nextObj.posX = moveObj.posX;
+		nextObj.posY = moveObj.posY;
+		nextObj.sprite.setPosition(cc.p(moveObj.posX, moveObj.posY));
+		
+		//移動中のパズル玉の位置情報を更新
+		this._board[moveObj.aryX][moveObj.aryY].posX = tmpPosX;
+		this._board[moveObj.aryX][moveObj.aryY].posY = tmpPosY;
+	},
+	/**
+	 * タッチしたパズル玉
+	 * @param {object} touchPos タッチ座標
+	 **/
+	TouchDrop: function(touchPos){
+		for (var x = 0; x < g_lineXMax; x++) {
+			for (var y = 0; y < g_lineYMax; y++) {
+				var rect = this._board[x][y].sprite.getBoundingBoxToWorld();
+				if (cc.rectContainsPoint(rect, touchPos)) {
+					return this._board[x][y];
+				}
+			}
+		}
+	},
+	/**
+	 * 移動先のパズル玉
+	 * @param {object} moveObj 移動中のオブジェクト
+	 **/
+	nextTouchDrop: function(moveObj){
+		for (var x = 0; x < g_lineXMax; x++) {
+			for (var y = 0; y < g_lineYMax; y++) {
+				if(this._board[x][y].sprite.tag == moveObj.sprite.tag){
+					continue;
+				}
+				
+				var movePos = moveObj.sprite.getPosition();
+				var Pos = this._board[x][y].sprite.getPosition();
+				var radius = moveObj.sprite.getContentSize().width / 2;
+				if(cc.pDistance(movePos , Pos) < radius){
+					return this._board[x][y];
+				}
+			}
+		}
+	},
+	//パズルの初期表示
+	initDrop:function(){
+		var typeMax = g_typeMax;
+		var widthMax = g_lineXMax;
+		var heightMax = g_lineYMax;
+		var cells = [];
+		var dropTags = [];
+		var drops = [];
+		var board = [];
+		
+		for (var x = 0; x < widthMax; x++){
+			cells[x] = [];
+			dropTags[x] = [];
+			drops[x] = [];
+			board[x] = [];
+			
+			for(var y = 0; y < heightMax; y++){
+				var rand = Math.floor( Math.random() * typeMax);
+				var sprite = this.DropSprite(rand);
+				var posX = 250 + (x * sprite.getContentSize().width);
+				var posY = 650 + (y * sprite.getContentSize().height);
+				sprite.setPosition(cc.p(posX, posY));
+				var tag = (x+1) + (y*widthMax);
+				this.addChild(sprite, 0, tag);
+				dropTags[x][y] = tag;
+				cells[x][y] = rand;
+				drops[x][y] = sprite;
+				
+				sprite.dropType = rand;
+				
+				board[x][y] = {
+					aryX:x,
+					aryY:y,
+					posX: posX,
+					posY: posY,
+					sprite: sprite
+				};
+			}
+		}
+		this._cells = cells;
+		this._dropTags = dropTags;
+		this._drops = drops;
+		this._board = board;
 	},
 	//パズルの消去(タグを指定)
 	removeDrop:function(removeTags){
@@ -55,14 +189,15 @@ var GameLayer3 = cc.Layer.extend({
 		}
 	},
 	//盤面のパズルをチェック
-	checkDrop:function(){
-		this._dropRomoveTags = [];
+	checkBoardDrop:function(){
+		/*this._dropRomoveTags = [];
 		for (var x = 0; x < g_lineXMax; x++) {
 			for (var y = 0; y < g_lineYMax; y++) {
 				this.check(2, x, y);
 			}
 		}
-		this.removeDrop(this._dropRomoveTags);
+		this.removeDrop(this._dropRomoveTags);*/
+		this.check(2, 0, 0);
 	},
 	/**
 	 * 近接する同じ種類のブロックを探す
@@ -74,14 +209,14 @@ var GameLayer3 = cc.Layer.extend({
 	 * @param {Object} y
 	 */
 	check:function(checkType, x, y){
-		if(this._cells[x] == null || this._cells[x][y] == null) return 0; //範囲外か空のブロック
+		if(this._board[x] == null || this._board[x][y] == null) return 0; //範囲外か空のブロック
 		/*
 		 * 探索用に二次元配列を作る.
 		 * 未探索は-1
 		 * 探索済み (x,y)にあるブロックと同じ種類のブロックは1
 		 *               違う種類のブロック,空のブロックは 2
 		 */
-		var blockType = this._cells[x][y];
+		/*var blockType = this._board[x][y];
 		var cells_check = [];
 		for (var i = 0; i < g_lineXMax; i++) {
 			cells_check[i] = [];
@@ -115,7 +250,7 @@ var GameLayer3 = cc.Layer.extend({
 				return 0;
 			}
 		}
-		return count;
+		return count;*/
 	},
 	checkRecursive: function(x, y, cells_check, blockType){
 		if(this._cells[x] == null || this._cells[x][y] == null || 0 < cells_check[x][y]) return; //範囲外か探索済み
@@ -135,122 +270,8 @@ var GameLayer3 = cc.Layer.extend({
 	moveDrop:function(){
 		
 	},
-	//パズルの表示
-	showDrop:function(){
-		var typeMax = g_typeMax;
-		var widthMax = g_lineXMax;
-		var heightMax = g_lineYMax;
-		var cells = [];
-		var dropTags = [];
-		var drops = [];
-		
-		for (var x = 0; x < widthMax; x++){
-			cells[x] = [];
-			dropTags[x] = [];
-			drops[x] = [];
-			
-			for(var y = 0; y < heightMax; y++){
-				var rand = Math.floor( Math.random() * typeMax);
-				var sprite = this.DropSprite(rand);
-				var posX = 250 + (x * sprite.getContentSize().width);
-				var posY = 650 + (y * sprite.getContentSize().height);
-				sprite.setPosition(cc.p(posX, posY));
-				var tag = (x+1) + (y*widthMax);
-				this.addChild(sprite, 0, tag);
-				dropTags[x][y] = tag;
-				cells[x][y] = rand;
-				drops[x][y] = sprite;
-				
-				
-				var listener = cc.EventListener.create({
-					event: cc.EventListener.TOUCH_ONE_BY_ONE,
-					swallowTouches: true,
-					_targetNode : null,
-					_newNode:null,
-					onTouchBegan: function(touch, event) {
-						var point = touch.getLocation();
-						var target = event.getCurrentTarget();  
-						//Get the position of the current point relative to the button
-						var locationInNode = target.convertToNodeSpace(touch.getLocation());
-						var s = target.getContentSize();
-						var rect = cc.rect(0, 0, s.width, s.height);
-						//Check the click area
-						if (cc.rectContainsPoint(rect, locationInNode)) {
-							//cc.log("sprite began... x = " + locationInNode.x + ", y = " + locationInNode.y);
-							//cc.log(target.tag);
-							target.opacity = 128;
-							this._targetNode = target;
-							
-							//選択したパズルの種類を判別
-							/*var person = {};
-							this._dropTags.forEach(function(value, index){
-								var result = value.indexOf( target.tag );
-								if(result >= 0){
-									person = {
-										x:index,
-										y:result
-									};
-								}
-							});
-							var type = this._cells[person.x][person.y];
-							this._newNode = this.DropSprite(type);
-							this._newNode.setPosition(cc.p(target.getPosition().x, target.getPosition().y));
-							this.addChild(this._newNode);*/
-							
-							return true;
-						}
-						return false;
-					}.bind(this),
-					onTouchMoved: function(touch, event){
-						/*var delta = touch.getDelta();
-						var position = this._newNode.getPosition();
-						var newPosition = cc.pAdd(position, delta);
-						this._newNode.setPosition(newPosition);*/
-						
-						//this._targetNode.setPosition(cc.pAdd(this._targetNode.getPosition(), touch.getDelta()));
-						var targetDrop = this._targetNode;
-						var nextDrop = this.nextTouchDrop(touch.getLocation(), this._targetNode);
-						if(nextDrop){
-							var nextPos = nextDrop.getPosition();
-							var targetPos = targetDrop.getPosition();
-							
-							nextDrop.setPosition(targetPos);
-							targetDrop.setPosition(nextPos);
-						}
-						
-					}.bind(this),
-					onTouchEnded: function(touch, event) {
-						this._targetNode.opacity = 255;
-						//this._newNode.removeFromParentAndCleanup(true);
-						
-						//盤面のパズルをチェック
-						//this.checkDrop();
-						
-					}.bind(this)
-				}, this);
-				cc.eventManager.addListener(listener, sprite);
-			}
-		}
-		this._cells = cells;
-		this._dropTags = dropTags;
-		this._drops = drops;
-	},
-	//移動先のパズル玉
-	nextTouchDrop: function(touchPos, targetNode){
-		for (var x = 0; x < g_lineXMax; x++) {
-			for (var y = 0; y < g_lineYMax; y++) {
-				if(this._drops[x][y].tag == targetNode.tag){
-					continue;
-				}
-				
-				var rect = this._drops[x][y].getBoundingBoxToWorld();
-				if (cc.rectContainsPoint(rect, touchPos)) {
-					return this._drops[x][y];
-					//cc.log(this._drops[x][y]);
-				}
-			}
-		}
-	},
+	
+	
 	//パズル玉の描画
 	DropSprite:function(dropType) {
 		var resImg = null;
