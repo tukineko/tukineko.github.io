@@ -1,6 +1,6 @@
-var g_typeMax = 6; //6まで
-var g_lineXMax = 3;
-var g_lineYMax = 3;
+var g_typeMax = 3; //6まで
+var g_lineXMax = 4;
+var g_lineYMax = 4;
 
 var GameScene3 = cc.Scene.extend({
 	onEnter:function () {
@@ -17,9 +17,6 @@ var GameLayer3 = cc.Layer.extend({
 	_winSize: null,
 	_winSizeCenterW: null,
 	_winSizeCenterH: null,
-	_drops: [],
-	_dropTags: null,
-	_cells: null,
 	_dropRomoveTags: [],
 	_board: null,
 	ctor:function () {
@@ -69,10 +66,10 @@ var GameLayer3 = cc.Layer.extend({
 			onTouchEnded: function(touch, event) {
 				this._moveObj.sprite.opacity = 255;
 				this._moveObj.sprite.setPosition(cc.p(this._board[this._moveObj.aryX][this._moveObj.aryY].posX, this._board[this._moveObj.aryX][this._moveObj.aryY].posY));
-				cc.log(this._board);
+				
 				//盤面のパズルをチェック
-				//this.checkBoardDrop();
-
+				this.checkBoardDrop();
+				
 			}.bind(this)
 		}, this);
 	},
@@ -133,15 +130,9 @@ var GameLayer3 = cc.Layer.extend({
 		var typeMax = g_typeMax;
 		var widthMax = g_lineXMax;
 		var heightMax = g_lineYMax;
-		var cells = [];
-		var dropTags = [];
-		var drops = [];
 		var board = [];
 		
 		for (var x = 0; x < widthMax; x++){
-			cells[x] = [];
-			dropTags[x] = [];
-			drops[x] = [];
 			board[x] = [];
 			
 			for(var y = 0; y < heightMax; y++){
@@ -150,13 +141,9 @@ var GameLayer3 = cc.Layer.extend({
 				var posX = 250 + (x * sprite.getContentSize().width);
 				var posY = 650 + (y * sprite.getContentSize().height);
 				sprite.setPosition(cc.p(posX, posY));
+				sprite.dropType = rand;
 				var tag = (x+1) + (y*widthMax);
 				this.addChild(sprite, 0, tag);
-				dropTags[x][y] = tag;
-				cells[x][y] = rand;
-				drops[x][y] = sprite;
-				
-				sprite.dropType = rand;
 				
 				board[x][y] = {
 					aryX:x,
@@ -167,9 +154,7 @@ var GameLayer3 = cc.Layer.extend({
 				};
 			}
 		}
-		this._cells = cells;
-		this._dropTags = dropTags;
-		this._drops = drops;
+		
 		this._board = board;
 	},
 	//パズルの消去(タグを指定)
@@ -190,33 +175,33 @@ var GameLayer3 = cc.Layer.extend({
 	},
 	//盤面のパズルをチェック
 	checkBoardDrop:function(){
-		/*this._dropRomoveTags = [];
+		this._dropRomoveTags = [];
 		for (var x = 0; x < g_lineXMax; x++) {
 			for (var y = 0; y < g_lineYMax; y++) {
 				this.check(2, x, y);
 			}
 		}
-		this.removeDrop(this._dropRomoveTags);*/
-		this.check(2, 0, 0);
+		this.removeDrop(this._dropRomoveTags);
+		cc.log(this._board);
 	},
 	/**
 	 * 近接する同じ種類のブロックを探す
 	 * 返り値は 二次元配列
 	 * checkTypeの値を1に指定すると、近接するブロックの数を返す
-	 * checkTypeの値を2に指定すると、近接するブロックが2個以上の場合消去
+	 * checkTypeの値を2に指定すると、近接するブロックが3個以上の場合消去
 	 * @param {Object}checkType チェックの種類
 	 * @param {Object} x ブロックを置く位置
 	 * @param {Object} y
 	 */
 	check:function(checkType, x, y){
-		if(this._board[x] == null || this._board[x][y] == null) return 0; //範囲外か空のブロック
+		if(this._board[x] == null || this._board[x][y] == null) return 0; //範囲外
 		/*
 		 * 探索用に二次元配列を作る.
 		 * 未探索は-1
-		 * 探索済み (x,y)にあるブロックと同じ種類のブロックは1
-		 *               違う種類のブロック,空のブロックは 2
+		 * 探索済み (x,y)にあるブロックと同じ種類のブロックは 1
+		 *               違う種類のブロックは 2
 		 */
-		/*var blockType = this._board[x][y];
+		var blockType = this._board[x][y].sprite.dropType;
 		var cells_check = [];
 		for (var i = 0; i < g_lineXMax; i++) {
 			cells_check[i] = [];
@@ -224,6 +209,7 @@ var GameLayer3 = cc.Layer.extend({
 				cells_check[i][j] = -1; //未チェック
 			}
 		}
+		
 		this.checkRecursive(x, y, cells_check, blockType);
 		
 		//隣接するブロックの数を数える
@@ -235,14 +221,15 @@ var GameLayer3 = cc.Layer.extend({
 				}
 			}
 		}
+		
 		//ブロック消去
 		if (checkType == 2) {
-			if (count >= 2) {
+			if (count >= 3) {
 				for (var i = 0; i < cells_check.length; i++) {
 					for (var j = 0; j < cells_check[i].length; j++) {
 						if (cells_check[i][j] == 1) {
-							this._cells[i][j] = null;
-							this._dropRomoveTags.push(this._dropTags[i][j]);
+							this._dropRomoveTags.push(this._board[i][j].sprite.tag);
+							this._board[i][j] = null;
 						}
 					}
 				}
@@ -250,11 +237,13 @@ var GameLayer3 = cc.Layer.extend({
 				return 0;
 			}
 		}
-		return count;*/
+		return count;
 	},
 	checkRecursive: function(x, y, cells_check, blockType){
-		if(this._cells[x] == null || this._cells[x][y] == null || 0 < cells_check[x][y]) return; //範囲外か探索済み
-		if (this._cells[x][y] != blockType) { //ブロックの種類が違う
+		if(this._board[x] == null || this._board[x][y] == null || 0 < cells_check[x][y]){ //範囲外か探索済み
+			return;
+		}
+		if (this._board[x][y].sprite.dropType != blockType) { //ブロックの種類が違う
 			cells_check[x][y] = 2;
 			return;
 		}
