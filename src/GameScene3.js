@@ -62,7 +62,7 @@ var GameLayer3 = cc.Layer.extend({
 				var posY = 650 + (DROP_SIZE * DROP_NUM_Y);
 				this._moveNode.setPosition(cc.pClamp(cc.pAdd(this._moveNode.getPosition(), touch.getDelta()), cc.p(250, 650), cc.p(posX, posY)));
 				
-				var nextNode = this.getTouchDrop(touch.getLocation(), this._moveNode);
+				var nextNode = this.getNextDrop(this._moveNode);
 				if(nextNode && this._moveNode != nextNode){
 					this.swapNode(this._moveNode, nextNode);
 				}
@@ -85,21 +85,22 @@ var GameLayer3 = cc.Layer.extend({
 	},
 	//ノード同士の入れ替え
 	swapNode: function(moveNode, nextNode){
-		var next = {x:nextNode.indexX, y:nextNode.indexY}
+		var next = {x:nextNode.indexX, y:nextNode.indexY};
 		
+		nextNode.moveFlg = true;
 		var posX = 250 + (moveNode.indexX * DROP_SIZE);
 		var posY = 650 + (moveNode.indexY * DROP_SIZE);
-		nextNode.setPosition(cc.p(posX, posY));
+		//nextNode.setPosition(cc.p(posX, posY));
 		nextNode.indexX = moveNode.indexX;
 		nextNode.indexY = moveNode.indexY;
 		this._board[nextNode.indexX][nextNode.indexY] = nextNode;
-		/*var action = cc.sequence(
+		var action = cc.sequence(
 			cc.moveTo(0.3, cc.p(posX, posY)).easing(cc.easeOut(3)),
 			cc.callFunc(function() {
-
+				nextNode.moveFlg = false;
 			}, this)
 		);
-		nextNode.runAction(action);*/
+		nextNode.runAction(action);
 		
 		moveNode.indexX = next.x;
 		moveNode.indexY = next.y;
@@ -110,16 +111,29 @@ var GameLayer3 = cc.Layer.extend({
 	 * @param {object} touchPos タッチ座標
 	 * @param {object} moveObj 移動中のオブジェクト
 	 **/
-	getTouchDrop: function(touchPos, moveNode){
+	getTouchDrop: function(touchPos){
+		for (var x = 0; x < DROP_NUM_X; x++) {
+			for (var y = 0; y < DROP_NUM_Y; y++) {
+				var pos = this._board[x][y].getPosition();
+				var size = DROP_SIZE / 2;
+				if(cc.pDistance(touchPos , pos) < size){
+					return this._board[x][y];
+				}
+			}
+		}
+		return null;
+	},
+	getNextDrop: function(moveNode){
 		for (var x = 0; x < DROP_NUM_X; x++) {
 			for (var y = 0; y < DROP_NUM_Y; y++) {
 				if(moveNode && x == moveNode.indexX && y == moveNode.indexY){
 					continue;
 				}
 				
+				var mpos = moveNode.getPosition();
 				var pos = this._board[x][y].getPosition();
 				var size = DROP_SIZE / 2;
-				if(cc.pDistance(touchPos , pos) < size){
+				if(cc.pDistance(mpos , pos) < size && this._board[x][y].moveFlg === false){
 					return this._board[x][y];
 				}
 			}
@@ -180,6 +194,7 @@ var GameLayer3 = cc.Layer.extend({
 		sprite.dropType = dropType;
 		sprite.indexX = x;
 		sprite.indexY = y;
+		sprite.moveFlg = false;
 		
 		return sprite;
 	},
