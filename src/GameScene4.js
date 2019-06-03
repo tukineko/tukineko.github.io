@@ -1,13 +1,18 @@
-var GameLayer = cc.Layer.extend({
+var GameLayer4 = cc.Layer.extend({
+	_winSize: null,
+	_winSizeCenterW: null,
+	_winSizeCenterH: null,
 	space: null,
 	ctor:function () {
 		this._super();
-		
-		
+		this._winSize = cc.director.getWinSize();
+		this._winSizeCenterW = this._winSize.width / 2.0;
+		this._winSizeCenterH = this._winSize.height / 2.0;
 		
 		this.initSpace();
-		//this.createPhysicsSprite();
-		//this.createFloor();
+		this.createPhysicsSprite();
+		this.createFloor();
+		
 	},
 	initSpace: function() {
 
@@ -33,7 +38,7 @@ var GameLayer = cc.Layer.extend({
 	createPhysicsSprite: function() {
 
 		// 物理スプライト
-		var physicsSprite = new cc.PhysicsSprite(res.img_debug);
+		var physicsSprite = new cc.PhysicsSprite(res.img_puzzle2);
 
 		// 質量
 		var mass = 100;
@@ -47,20 +52,32 @@ var GameLayer = cc.Layer.extend({
 		this.space.addBody(body);
 
 		// 形状、摩擦係数、反発係数を設定
-		var shape = new cp.CircleShape(body, 64, cp.v(0, 0));
+		var shape = new cp.CircleShape(body, 75, cp.v(0, 0));
 		shape.setFriction(1.0);
 		shape.setElasticity(0.8);
 		this.space.addShape(shape);
 		physicsSprite.setBody(body);
-		physicsSprite.setPosition(cc.winSize.width / 2, cc.winSize.height / 2);
+		physicsSprite.setPosition(cc.winSize.width / 2, 200);
 		this.addChild(physicsSprite);
 		
-		var touchPoint = null;
 		
+		//もどるボタンの配置
+		var btnBack = new cc.Sprite(res.img_commonBtnBack);
+		btnBack.setPosition(cc.p(100, this._winSize.height - 100));
+		btnBack.setScale(0.2);
+		this.addChild(btnBack, 3);
+		
+		
+		var touchPoint = null;
 		//タッチイベント
 		cc.eventManager.addListener({
 			event: cc.EventListener.TOUCH_ONE_BY_ONE,
 			onTouchBegan: function(touch, event) {
+				
+				if(cc.rectContainsPoint(btnBack.getBoundingBox(), touch.getLocation())){
+					cc.director.runScene(cc.TransitionFade.create(1, new MenuScene()));
+				}
+				
 				var characterRect = this.getRect(physicsSprite);
 				touchPoint = touch.getLocation();
 				return cc.rectContainsPoint(characterRect, touchPoint);
@@ -109,10 +126,10 @@ var GameLayer = cc.Layer.extend({
 	},
 });
 
-var GameScene = cc.Scene.extend({
+var GameScene4 = cc.Scene.extend({
 	onEnter:function () {
 		this._super();
-		var layer = new GameLayer();
+		var layer = new GameLayer4();
 		this.addChild(layer);
 	}
 });

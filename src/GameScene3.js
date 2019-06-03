@@ -26,6 +26,12 @@ var GameLayer3 = cc.Layer.extend({
 		this._board = null;
 		this._game_state = GameLayer3.GameState["PLAYING"];
 		
+		//もどるボタンの配置
+		var btnBack = new cc.Sprite(res.img_commonBtnBack);
+		btnBack.setPosition(cc.p(100, this._winSize.height - 100));
+		btnBack.setScale(0.2);
+		this.addChild(btnBack, 3);
+		
 		//パズルの初期表示
 		this.initDrop();
 		//cc.log(this._board);
@@ -40,6 +46,11 @@ var GameLayer3 = cc.Layer.extend({
 			_moveNode : null,
 			onTouchBegan: function(touch, event) {
 				if(this._game_state === GameLayer3.GameState["PLAYING"]){
+					
+					if(cc.rectContainsPoint(btnBack.getBoundingBox(), touch.getLocation())){
+						cc.director.runScene(cc.TransitionFade.create(1, new MenuScene()));
+					}
+					
 					//タッチしたパズル玉のノードを返す
 					var moveNode = this.getTouchDrop(touch.getLocation());
 					if(moveNode){

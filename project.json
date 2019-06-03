@@ -13,6 +13,8 @@
 		"src/GameScene.js",
 		"src/GameScene2.js",
 		"src/GameScene3.js",
+		"src/GameScene4.js",
+		"src/GameScene5.js",
 		"src/TestScene.js"
 	]
 }
