@@ -1,16 +1,14 @@
 #ifndef __GameScene_H__
 #define __GameScene_H__
 
-#include "cocos2d.h"
+#include "Config.h"
 
 USING_NS_CC;
 
 class GameScene : public cocos2d::Scene
 {
 protected:
-    int _winSizwW;
-    int _winSizeH;
-
+    
     Vector<Sprite*> _items;
 
 public:

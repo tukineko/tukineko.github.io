@@ -3,6 +3,7 @@
 
 #include "GameScene.h"
 #include "Game02Scene.h"
+#include "Game03Scene.h"
 
 USING_NS_CC;
 
@@ -19,22 +20,20 @@ bool TitleScene::init()
     }
     CCLOG("----------------TitleLayer::init()----------------");
 
-    auto visibleSize = Director::getInstance()->getVisibleSize();
-    _winSizwW = visibleSize.width;
-    _winSizeH = visibleSize.height;
-
-    auto _bg2 = LayerColor::create(Color4B::WHITE, _winSizwW, _winSizeH);
-    this->addChild(_bg2);
+    auto bg = LayerColor::create(Color4B::WHITE, winSizeW, winSizeH);
+    this->addChild(bg);
 
     auto mItem1 = MenuItemImage::create("btn.png", "btnOn.png", CC_CALLBACK_0(TitleScene::nextSceneCallback, this));
-    mItem1->setPosition(Vec2(_winSizwW / 5, _winSizeH / 1.25));
+    mItem1->setPosition(Vec2(winSizeW / 5, winSizeH - 100));
     auto mItem2 = MenuItemImage::create("btn.png", "btnOn.png", CC_CALLBACK_0(TitleScene::nextSceneCallback2, this));
-    mItem2->setPosition(Vec2(_winSizwW / 5, _winSizeH / 1.5));
+    mItem2->setPosition(Vec2(winSizeW / 5, winSizeH - 150));
+    auto mItem3 = MenuItemImage::create("btn.png", "btnOn.png", CC_CALLBACK_0(TitleScene::nextSceneCallback3, this));
+    mItem3->setPosition(Vec2(winSizeW / 5, winSizeH - 200));
 
     //ƒƒjƒ…[‚ðì¬
-    auto _menu2 = Menu::create(mItem1, mItem2, NULL);
-    _menu2->setPosition(Point::ZERO);
-    this->addChild(_menu2);
+    auto menu = Menu::create(mItem1, mItem2, mItem3, NULL);
+    menu->setPosition(Point::ZERO);
+    this->addChild(menu);
 
     return true;
 }
@@ -45,5 +44,9 @@ void TitleScene::nextSceneCallback() {
 
 void TitleScene::nextSceneCallback2() {
     Director::getInstance()->replaceScene(TransitionFadeTR::create(1.0f, Game02Scene::createScene()));
+}
+
+void TitleScene::nextSceneCallback3() {
+    Director::getInstance()->replaceScene(TransitionFade::create(1.0f, Game03Scene::createScene(), Color3B::WHITE));
 }
 

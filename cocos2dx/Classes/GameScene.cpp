@@ -18,10 +18,6 @@ bool GameScene::init()
         return false;
     }
 
-    auto visibleSize = Director::getInstance()->getVisibleSize();
-    _winSizwW = visibleSize.width;
-    _winSizeH = visibleSize.height;
-    
     this->setupItems();
     
 
@@ -39,8 +35,8 @@ void GameScene::setupItems(){
     //30個の画像を画面上のランダムな位置に表示して配列に格納
     for (int i = 0; i < 30; i++) {
         auto item = Sprite::create("puzzle1.png");
-        int px = rand() % _winSizwW;
-        int py = rand() % _winSizeH;
+        int px = rand() % (int)winSizeW;
+        int py = rand() % (int)winSizeH;
         item->setPosition(Vec2(px, py));
         this->addChild(item);
 
