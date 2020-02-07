@@ -25,6 +25,7 @@
 #include "AppDelegate.h"
 #include "HelloWorldScene.h"
 #include "TitleScene.h"
+#include "Game03Scene.h"
 
 // #define USE_AUDIO_ENGINE 1
 // #define USE_SIMPLE_AUDIO_ENGINE 1
@@ -102,7 +103,8 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     // create a scene. it's an autorelease object
     //auto scene = HelloWorld::createScene();
-    auto scene = TitleScene::createScene();
+    //auto scene = TitleScene::createScene();
+    auto scene = Game03Scene::createScene();
 
     // run
     director->runWithScene(scene);

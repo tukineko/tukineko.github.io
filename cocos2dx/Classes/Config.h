@@ -9,20 +9,4 @@
 #define winSizeCenterW winSizeW / 2
 #define winSizeCenterH winSizeH / 2
 
-enum kBlock {
-    kBlockRed,
-    kBlockBlue,
-    kBlockYellow,
-    kBlockGreen,
-    kBlockGray,
-    kBlockCount
-};
-
-enum kStatus {
-    kStatusNormal,
-    kStatusMarked,
-    kStatusSwept
-};
-
-
 #endif // __Config_H__

@@ -16,14 +16,14 @@ public:
 
     virtual bool init();
     
-    // implement the "static create()" method manually
-    CREATE_FUNC(GameScene);
-
     void setupItems();
 
     bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event);
+
+    // implement the "static create()" method manually
+    CREATE_FUNC(GameScene);
 };
 
 #endif // __GameScene_H__

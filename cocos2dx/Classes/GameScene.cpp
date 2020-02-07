@@ -1,8 +1,6 @@
 #include "GameScene.h"
 #include "SimpleAudioEngine.h"
 
-USING_NS_CC;
-
 Scene* GameScene::createScene()
 {
     return GameScene::create();
@@ -17,6 +15,7 @@ bool GameScene::init()
     {
         return false;
     }
+    CCLOG("----------------GameScene::init()----------------");
 
     this->setupItems();
     
@@ -46,7 +45,7 @@ void GameScene::setupItems(){
 
 //タッチした時に呼び出される関数
 bool GameScene::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event) {
-
+    CCLOG("-------onTouchBegan--------");
     return true;
 }
 

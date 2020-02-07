@@ -3,27 +3,27 @@
 
 #include "Config.h"
 
-#include "BlockSprite.h"
+USING_NS_CC;
 
-class Game03Scene : public cocos2d::Scene
+class Game03Scene : public Layer
 {
-protected:
-    int _speed = 10;
-    int _degree = 180;
-
-    Vector<Sprite*> _balls;
-
-public:
-    static cocos2d::Scene* createScene();
-
-    virtual bool init();
+private:
     
-    // implement the "static create()" method manually
+protected:
+    
+public:
+    static Scene* createScene();
     CREATE_FUNC(Game03Scene);
+    virtual bool init();
 
-    void update(float frame);
+    bool onContactBegin(PhysicsContact& constact);
 
-    void spawnBall();
+    Sprite* addNewCircleAtPosition(Node* parent, Point p, bool dynamic, const char* fileName);
+    Sprite* addNewBoxAtPosition(Node* parent, Point p, bool dynamic, const char* fileName);
+
+    bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
+    void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event);
+    void onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event);
 };
 
 #endif // __Game03Scene_H__
