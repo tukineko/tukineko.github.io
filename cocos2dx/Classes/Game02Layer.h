@@ -1,5 +1,5 @@
-#ifndef __Game02Scene_H__
-#define __Game02Scene_H__
+#ifndef __Game02Layer_H__
+#define __Game02Layer_H__
 
 #include "Config.h"
 
@@ -11,7 +11,7 @@
 
 USING_NS_CC;
 
-class Game02Scene : public cocos2d::Scene
+class Game02Layer : public Layer
 {
 protected:
     
@@ -29,12 +29,9 @@ protected:
 
 
 public:
-    static cocos2d::Scene* createScene();
-
+    static Scene* createScene();
     virtual bool init();
-    
-    // implement the "static create()" method manually
-    CREATE_FUNC(Game02Scene);
+    CREATE_FUNC(Game02Layer);
 
     virtual void onEnterTransitionDidFinish();
     void update(float frame);
@@ -48,11 +45,12 @@ public:
     void spawnBall();
 
 
-    bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
-    void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event);
-    void onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event);
+    bool onTouchBegan(Touch* touch, Event* event);
+    void onTouchEnded(Touch* touch, Event* event);
+    void onTouchMoved(Touch* touch, Event* event);
 
     void nextSceneCallback();
+    void backTitleCallback();
 };
 
-#endif // __Game02Scene_H__
+#endif // __Game02Layer_H__

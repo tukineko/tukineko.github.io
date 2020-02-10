@@ -1,24 +1,34 @@
-#include "Game02Scene.h"
+#include "Game02Layer.h"
 #include "SimpleAudioEngine.h"
 
-#include "TitleScene.h"
+#include "TitleLayer.h"
 
 USING_NS_CC;
 
-Scene* Game02Scene::createScene()
+Scene* Game02Layer::createScene()
 {
-    return Game02Scene::create();
+    Scene* scene = Scene::create();
+    Game02Layer* layer = Game02Layer::create();
+    scene->addChild(layer);
+    return scene;
 }
 
 // on "init" you need to initialize your instance
-bool Game02Scene::init()
+bool Game02Layer::init()
 {
     //////////////////////////////
     // 1. super init first
-    if ( !Scene::init() )
+    if ( !Layer::init() )
     {
         return false;
     }
+
+    auto labelBtnLabel01 = LabelTTF::create("Back to Title", "fonts/Marker Felt.ttf", 24);
+    auto labelItem01 = MenuItemLabel::create(labelBtnLabel01, CC_CALLBACK_0(Game02Layer::backTitleCallback, this));
+    labelItem01->setPosition(Vec2(winSizeW - 100, 30));
+    auto menu = Menu::create(labelItem01, nullptr);
+    menu->setPosition(Point::ZERO);
+    this->addChild(menu, 100);
 
     this->_game_state = 0;
 
@@ -29,9 +39,9 @@ bool Game02Scene::init()
     this->drawChara2();
 
     auto listener = EventListenerTouchOneByOne::create();
-    listener->onTouchBegan = CC_CALLBACK_2(Game02Scene::onTouchBegan, this);
-    listener->onTouchEnded = CC_CALLBACK_2(Game02Scene::onTouchEnded, this);
-    listener->onTouchMoved = CC_CALLBACK_2(Game02Scene::onTouchMoved, this);
+    listener->onTouchBegan = CC_CALLBACK_2(Game02Layer::onTouchBegan, this);
+    listener->onTouchEnded = CC_CALLBACK_2(Game02Layer::onTouchEnded, this);
+    listener->onTouchMoved = CC_CALLBACK_2(Game02Layer::onTouchMoved, this);
     auto dispatcher = Director::getInstance()->getEventDispatcher();
     dispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 
@@ -40,7 +50,7 @@ bool Game02Scene::init()
     return true;
 }
 
-void Game02Scene::onEnterTransitionDidFinish()
+void Game02Layer::onEnterTransitionDidFinish()
 {
     //ここに画面遷移後に呼び出したい処理を書く
     this->_game_state = 1;
@@ -48,7 +58,7 @@ void Game02Scene::onEnterTransitionDidFinish()
 
 }
 
-void Game02Scene::ViewScore()
+void Game02Layer::ViewScore()
 {
     this->removeChildByTag(1000);
 
@@ -57,7 +67,7 @@ void Game02Scene::ViewScore()
     this->addChild(label, 0, 1000);
 }
 
-void Game02Scene::GameOver() {
+void Game02Layer::GameOver() {
     this->_game_state = 3;
     auto gameover = Sprite::create("txt_gameover.png");
     gameover->setPosition(Vec2(winSizeCenterW, winSizeCenterH));
@@ -67,7 +77,7 @@ void Game02Scene::GameOver() {
     //Ver3.x CC_CALLBACK_1 マクロ（引数が１つ）にすること
     auto labelBtnLabel01 = LabelTTF::create("Back to Title", "fonts/Marker Felt.ttf", 48);
     // ラベルメニューアクション先の設定
-    auto labelItem01 = MenuItemLabel::create(labelBtnLabel01, CC_CALLBACK_0(Game02Scene::nextSceneCallback, this));
+    auto labelItem01 = MenuItemLabel::create(labelBtnLabel01, CC_CALLBACK_0(Game02Layer::nextSceneCallback, this));
     // ラベルの設置
     labelItem01->setPosition(Vec2(winSizeCenterW, 200));
 
@@ -80,7 +90,7 @@ void Game02Scene::GameOver() {
 
 }
 
-void Game02Scene::GameStart()
+void Game02Layer::GameStart()
 {
     auto count3 = Sprite::create("countdown3.png");
     count3->setPosition(Vec2(winSizeCenterW, winSizeCenterH));
@@ -137,7 +147,7 @@ void Game02Scene::GameStart()
     );
 }
 
-void Game02Scene::update(float frame) {
+void Game02Layer::update(float frame) {
     if (this->_ball_status == 1) {
         if (this->_ball->getPosition().x >= 1100) {
             this->_ball->removeFromParentAndCleanup(true);
@@ -152,7 +162,7 @@ void Game02Scene::update(float frame) {
     }
 }
 
-void Game02Scene::drawChara1()
+void Game02Layer::drawChara1()
 {
     DrawNode* line = DrawNode::create();
     line->drawSegment(Vec2(winSizeW / 4, 0), Vec2(winSizeW / 4, winSizeH), 2.5f, Color4F::RED);
@@ -175,7 +185,7 @@ void Game02Scene::drawChara1()
     this->addChild(this->_ude1);
 }
 
-void Game02Scene::drawChara2()
+void Game02Layer::drawChara2()
 {
     // 矩形
     // x座標, y座標, width, height
@@ -194,7 +204,7 @@ void Game02Scene::drawChara2()
     this->addChild(this->_ude2);
 }
 
-void Game02Scene::spawnBall()
+void Game02Layer::spawnBall()
 {
     this->_ball_status = 0;
 
@@ -225,7 +235,7 @@ void Game02Scene::spawnBall()
 }
 
 //タッチした時に呼び出される関数
-bool Game02Scene::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event) {
+bool Game02Layer::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event) {
     auto location = touch->getLocation();
    
     //ゲームプレイ中なら有効
@@ -278,16 +288,20 @@ bool Game02Scene::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event) {
 }
 
 //タッチを離した時に呼び出される関数  
-void Game02Scene::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event) {
+void Game02Layer::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event) {
     
 }
 
 //タッチしながら移動中に呼び出される関数
-void Game02Scene::onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event) {
+void Game02Layer::onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event) {
 
 }
 
-void Game02Scene::nextSceneCallback() {
-    Director::getInstance()->replaceScene(TransitionFade::create(1.0f, TitleScene::createScene(), Color3B::WHITE));
+void Game02Layer::nextSceneCallback() {
+    Director::getInstance()->replaceScene(TransitionFade::create(1.0f, TitleLayer::createScene(), Color3B::WHITE));
+}
+
+void Game02Layer::backTitleCallback() {
+    Director::getInstance()->replaceScene(TransitionFade::create(1.0f, TitleLayer::createScene(), Color3B::WHITE));
 }
 
