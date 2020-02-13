@@ -13,7 +13,7 @@ Scene* Game06Layer::createScene()
     PhysicsWorld* world = scene->getPhysicsWorld();
     world->setGravity(Vec2(0, -980));
     //デバック用
-    //world->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+    world->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
     return scene;
 }

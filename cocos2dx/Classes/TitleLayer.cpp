@@ -7,6 +7,7 @@
 #include "Game04Layer.h"
 #include "Game05Layer.h"
 #include "Game06Layer.h"
+#include "Game07Layer.h"
 
 USING_NS_CC;
 
@@ -26,9 +27,29 @@ bool TitleLayer::init()
     }
     CCLOG("----------------TitleLayer::init()----------------");
 
+    //グリッド線
+    auto render = RenderTexture::create(winSizeW, winSizeH);
+    render->setPosition(Vec2(winSizeCenterW, winSizeCenterH));
+    this->addChild(render, 999);
+    
+    render->begin();
+    auto line = DrawNode::create();
+    line->retain();
+    for (int x = 0; x < 10; x++) {
+        line->drawSegment(Vec2(100 * x, 0), Vec2(100 * x, winSizeH), 1.0f, Color4F::RED);
+        line->Node::visit();
+    }
+    for (int y = 0; y < 7; y++) {
+        line->drawSegment(Vec2(0, 100 * y), Vec2(winSizeW, 100 * y), 1.0f, Color4F::RED);
+        line->Node::visit();
+    }
+    render->end();
+
+    //背景
     auto bg = LayerColor::create(Color4B::WHITE, winSizeW, winSizeH);
     this->addChild(bg);
 
+    //メニューボタン
     auto mItem1 = MenuItemImage::create("btn.png", "btnOn.png", CC_CALLBACK_0(TitleLayer::nextSceneCallback, this));
     mItem1->setPosition(Vec2(winSizeW / 5, winSizeH - 100));
     auto mItem2 = MenuItemImage::create("btn.png", "btnOn.png", CC_CALLBACK_0(TitleLayer::nextSceneCallback2, this));
@@ -41,9 +62,11 @@ bool TitleLayer::init()
     mItem5->setPosition(Vec2(winSizeW / 5, winSizeH - 300));
     auto mItem6 = MenuItemImage::create("btn.png", "btnOn.png", CC_CALLBACK_0(TitleLayer::nextSceneCallback6, this));
     mItem6->setPosition(Vec2(winSizeW / 5, winSizeH - 350));
+    auto mItem7 = MenuItemImage::create("btn.png", "btnOn.png", CC_CALLBACK_0(TitleLayer::nextSceneCallback7, this));
+    mItem7->setPosition(Vec2(winSizeW / 5, winSizeH - 350));
 
     //メニューを作成
-    auto menu = Menu::create(mItem1, mItem2, mItem3, mItem4, mItem5, mItem6, NULL);
+    auto menu = Menu::create(mItem1, mItem2, mItem3, mItem4, mItem5, mItem6, mItem7, NULL);
     menu->setPosition(Point::ZERO);
     this->addChild(menu);
 
@@ -72,4 +95,8 @@ void TitleLayer::nextSceneCallback5() {
 
 void TitleLayer::nextSceneCallback6() {
     Director::getInstance()->replaceScene(TransitionFade::create(1.0f, Game06Layer::createScene(), Color3B::WHITE));
+}
+
+void TitleLayer::nextSceneCallback7() {
+    Director::getInstance()->replaceScene(TransitionFade::create(1.0f, Game07Layer::createScene(), Color3B::WHITE));
 }
